@@ -12,6 +12,7 @@ import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -24,7 +25,7 @@ import java.nio.charset.StandardCharsets;
 
 public class MainActivity extends Activity {
 
-    private static final String DB_FILENAME = "homeview_database.json";
+    private static final String DB_FILENAME = "homeview_secure_database.json";
     private WebView webView;
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -32,7 +33,6 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Garder l'écran de la tablette actif (HomeView Kiosk)
         Window window = getWindow();
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         window.setStatusBarColor(Color.parseColor("#0B0F19"));
@@ -48,15 +48,24 @@ public class MainActivity extends Activity {
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
+        // Durcissement sécurité WebView Android
         settings.setAllowFileAccess(true);
-        settings.setAllowContentAccess(true);
+        settings.setAllowContentAccess(false);
+        settings.setAllowFileAccessFromFileURLs(false);
+        settings.setAllowUniversalAccessFromFileURLs(false);
+        settings.setSafeBrowsingEnabled(true);
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
 
-        // Pont natif Android pour persistance sur disque interne de la tablette
         webView.addJavascriptInterface(new AndroidBridge(), "AndroidHomeView");
 
         webView.setWebChromeClient(new WebChromeClient());
-        webView.setWebViewClient(new WebViewClient());
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                // Bloquer toute navigation externe non autorisée hors de l'application
+                return true;
+            }
+        });
 
         webView.loadUrl("file:///android_asset/index.html");
     }

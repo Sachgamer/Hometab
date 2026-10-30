@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0B0F19" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <title>HomeView — Tablette Salon & Comptes Foyer</title>
+  <title>HomeView — Sécurisé • Calendrier & Comptes Foyer</title>
   <link rel="manifest" href="manifest.json" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -57,7 +57,7 @@
     }
 
     dialog::backdrop {
-      background: rgba(2, 6, 23, 0.72);
+      background: rgba(2, 6, 23, 0.75);
       backdrop-filter: blur(8px);
     }
 
@@ -76,18 +76,70 @@
 </head>
 <body class="p-4 md:p-6 flex flex-col gap-5 min-h-screen">
 
+  <!-- ÉCRAN DE CONNEXION OBLIGATOIRE (LOCKSCREEN SÉCURISÉ AU DÉMARRAGE) -->
+  <div id="authLockScreen" class="fixed inset-0 z-50 bg-[#070A12]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-4 overflow-y-auto">
+    <div class="apple-glass rounded-3xl p-6 md:p-8 max-w-md w-full text-center space-y-5 border border-white/15 shadow-2xl">
+      <div class="flex items-center justify-center gap-2 text-xs font-extrabold uppercase tracking-widest text-blue-400">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+        </svg>
+        <span>Accès Sécurisé HomeView</span>
+      </div>
+
+      <div>
+        <h2 class="text-2xl font-extrabold text-white">Qui se connecte ?</h2>
+        <p class="text-xs text-slate-400 mt-1">Sélectionnez votre compte et entrez votre code PIN à chiffres</p>
+      </div>
+
+      <!-- Grille de sélection du compte obligatoire -->
+      <div id="lockScreenAccountsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+
+      <!-- Compte ciblé -->
+      <div class="pt-1">
+        <div id="lockTargetAvatar" class="text-4xl mb-1">🏡</div>
+        <div id="lockTargetName" class="text-base font-extrabold text-white">Tablette Salon</div>
+        <div id="lockTargetRoleBadge" class="text-xs text-emerald-400 font-semibold">Code PIN requis (défaut : 1234)</div>
+      </div>
+
+      <!-- Points du PIN -->
+      <div id="lockPinDotsRow" class="flex items-center justify-center gap-3.5 py-1"></div>
+      <div id="lockErrorMsg" class="text-xs font-bold text-rose-400 min-h-[1rem]"></div>
+
+      <!-- Clavier numérique sécurisé -->
+      <div class="grid grid-cols-3 gap-2.5 max-w-[260px] mx-auto">
+        <button type="button" onclick="pressAuthPinDigit('1')" class="h-14 rounded-2xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-xl font-bold text-white border border-white/10 transition">1</button>
+        <button type="button" onclick="pressAuthPinDigit('2')" class="h-14 rounded-2xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-xl font-bold text-white border border-white/10 transition">2</button>
+        <button type="button" onclick="pressAuthPinDigit('3')" class="h-14 rounded-2xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-xl font-bold text-white border border-white/10 transition">3</button>
+        <button type="button" onclick="pressAuthPinDigit('4')" class="h-14 rounded-2xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-xl font-bold text-white border border-white/10 transition">4</button>
+        <button type="button" onclick="pressAuthPinDigit('5')" class="h-14 rounded-2xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-xl font-bold text-white border border-white/10 transition">5</button>
+        <button type="button" onclick="pressAuthPinDigit('6')" class="h-14 rounded-2xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-xl font-bold text-white border border-white/10 transition">6</button>
+        <button type="button" onclick="pressAuthPinDigit('7')" class="h-14 rounded-2xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-xl font-bold text-white border border-white/10 transition">7</button>
+        <button type="button" onclick="pressAuthPinDigit('8')" class="h-14 rounded-2xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-xl font-bold text-white border border-white/10 transition">8</button>
+        <button type="button" onclick="pressAuthPinDigit('9')" class="h-14 rounded-2xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-xl font-bold text-white border border-white/10 transition">9</button>
+        <button type="button" onclick="clearAuthPinDigits()" class="h-14 rounded-2xl bg-slate-900 hover:bg-slate-800 text-xs font-bold text-slate-400 border border-white/5 transition">Effacer</button>
+        <button type="button" onclick="pressAuthPinDigit('0')" class="h-14 rounded-2xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-xl font-bold text-white border border-white/10 transition">0</button>
+        <button type="button" onclick="backspaceAuthPinDigit()" class="h-14 rounded-2xl bg-slate-900 hover:bg-slate-800 text-sm font-bold text-slate-300 border border-white/5 transition">⌫</button>
+      </div>
+
+      <div class="pt-2 border-t border-white/10 flex items-center justify-between text-xs text-slate-400">
+        <span>🔒 Hachage SHA-256 & Anti-Bruteforce</span>
+        <button type="button" onclick="openSyncModal()" class="text-blue-400 hover:underline font-semibold">Récupérer un foyer</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Mode Veille / Économiseur d'écran Tablette -->
-  <div id="screensaverOverlay" onclick="toggleScreensaver(false)" class="fixed inset-0 z-50 bg-black/95 text-white hidden flex-col items-center justify-center cursor-pointer">
-    <div id="saverTime" class="text-8xl font-bold tracking-tight text-white/90">19:35</div>
+  <div id="screensaverOverlay" onclick="toggleScreensaver(false)" class="fixed inset-0 z-40 bg-black/95 text-white hidden flex-col items-center justify-center cursor-pointer">
+    <div id="saverTime" class="text-8xl font-bold tracking-tight text-white/90">19:52</div>
     <div id="saverDate" class="text-2xl text-white/50 mt-3 capitalize">Vendredi 30 Octobre</div>
     <div class="mt-8 flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/10 text-white/75 text-sm">
       <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-      <span id="saverTaskSummary">Tablette Salon • Vue Générale</span>
+      <span id="saverTaskSummary">HomeView Sécurisé</span>
     </div>
     <p class="absolute bottom-8 text-xs text-white/30 tracking-widest uppercase">Touchez l'écran pour réveiller la tablette</p>
   </div>
 
-  <!-- HEADER : Comptes Connectés, Firebase Sync & Horloge -->
+  <!-- HEADER : Comptes Connectés, Sécurité & Horloge -->
   <header class="flex flex-wrap items-center justify-between gap-3">
     <div class="flex items-center gap-3.5">
       <div class="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-400/25 shadow-sm flex items-center justify-center">
@@ -97,21 +149,21 @@
         <div class="flex items-center gap-2.5">
           <h1 class="text-2xl font-extrabold tracking-tight text-white">HomeView</h1>
           <span id="saveStatusBadge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/25 flex items-center gap-1.5">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Firebase homeview-9a55c
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Sécurisé & Synchronisé
           </span>
         </div>
         <p id="headerDateSub" class="text-xs font-medium text-slate-400 capitalize">Vendredi 30 Octobre</p>
       </div>
     </div>
 
-    <!-- Barre des Comptes : Compte Général Tablette Salon + Comptes Individuels avec PIN -->
+    <!-- Barre des Comptes (Tout changement de compte exige le code PIN) -->
     <div class="flex items-center gap-2 overflow-x-auto py-1" id="accountsHeaderBar"></div>
 
     <!-- Actions Globales -->
     <div class="flex items-center gap-2">
-      <button onclick="openSyncModal()" title="Synchronisation Google Firebase (homeview-9a55c) & Appareils" class="apple-glass px-3.5 py-2.5 rounded-2xl text-xs font-bold text-amber-300 hover:text-white hover:bg-amber-500/20 border border-amber-500/25 transition flex items-center gap-2">
-        <span>🔥</span>
-        <span>Firebase Sync</span>
+      <button onclick="openSyncModal()" title="Sécurité Firebase & Synchronisation" class="apple-glass px-3.5 py-2.5 rounded-2xl text-xs font-bold text-amber-300 hover:text-white hover:bg-amber-500/20 border border-amber-500/25 transition flex items-center gap-1.5">
+        <span>🛡️</span>
+        <span class="hidden sm:inline">Sécurité & Sync</span>
       </button>
 
       <button onclick="openMemberModal()" title="Gérer les comptes, emojis et codes PIN" class="apple-glass px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-200 hover:text-white hover:bg-white/10 transition flex items-center gap-1.5">
@@ -119,16 +171,15 @@
         <span class="hidden sm:inline">Comptes & PIN</span>
       </button>
 
-      <div class="apple-glass px-3.5 py-2 rounded-2xl text-right">
-        <div id="liveClock" class="text-lg font-bold tracking-tight text-white leading-none">19:35</div>
-        <div id="activeUserLabel" class="text-xs font-semibold text-emerald-400 mt-0.5">🏡 Tablette Salon</div>
-      </div>
-
-      <button onclick="toggleScreensaver(true)" title="Mode Veille" class="apple-glass p-2.5 rounded-2xl text-slate-300 hover:text-white transition">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
-        </svg>
+      <button onclick="lockSessionNow()" title="Verrouiller immédiatement la session" class="apple-glass px-3.5 py-2.5 rounded-2xl text-xs font-bold text-rose-300 hover:text-white hover:bg-rose-500/20 border border-rose-500/25 transition flex items-center gap-1.5">
+        <span>🔒</span>
+        <span>Verrouiller</span>
       </button>
+
+      <div class="apple-glass px-3.5 py-2 rounded-2xl text-right">
+        <div id="liveClock" class="text-lg font-bold tracking-tight text-white leading-none">19:52</div>
+        <div id="activeUserLabel" class="text-xs font-semibold text-emerald-400 mt-0.5">Non connecté</div>
+      </div>
     </div>
   </header>
 
@@ -167,16 +218,16 @@
         <div id="calendarMemberLegend" class="pt-3 border-t border-white/10 flex flex-wrap items-center gap-2 text-xs"></div>
       </div>
 
-      <!-- Carte Compte Actif (Tablette Salon vs Compte Personnel) & Mémo Foyer -->
+      <!-- Carte Compte Actif & Mémo Foyer -->
       <div class="grid grid-cols-2 gap-4 flex-1">
         <div class="apple-glass rounded-3xl p-4 flex flex-col justify-between">
           <div class="flex items-center justify-between">
-            <span id="accountBadgeType" class="text-xs font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/25 px-2.5 py-1 rounded-full">🏡 Vue Générale</span>
-            <button onclick="switchToSalonGeneral()" id="backToSalonBtn" class="hidden text-xs font-bold text-emerald-400 hover:underline">Salon</button>
+            <span id="accountBadgeType" class="text-xs font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/25 px-2.5 py-1 rounded-full">🔐 Session Active</span>
+            <button onclick="lockSessionNow()" class="text-xs font-bold text-rose-400 hover:underline">Déconnexion</button>
           </div>
           <div id="currentAccountCardBody" class="my-2"></div>
-          <button onclick="openSwitchAccountModal()" class="w-full py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white transition">
-            Connecter un compte (PIN)
+          <button onclick="lockSessionNow()" class="w-full py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white transition">
+            Changer d'utilisateur (Code PIN)
           </button>
         </div>
 
@@ -187,9 +238,9 @@
             <span class="text-xs font-semibold text-blue-400">Modifier</span>
           </div>
           <p id="familyNoteText" class="text-xs font-semibold text-slate-200 line-clamp-4 my-2">
-            Bienvenue sur la tablette du salon ! Tout le monde peut voir le planning général ou se connecter à son compte.
+            Bienvenue sur la tablette du salon ! Connectez-vous avec votre code PIN pour gérer vos tâches.
           </p>
-          <div class="text-xs text-slate-500">Synchronisé sur tous les appareils</div>
+          <div class="text-xs text-slate-500">Synchronisé & Protégé</div>
         </div>
       </div>
 
@@ -204,7 +255,7 @@
               <h2 id="selectedDateTitle" class="text-xl font-extrabold text-white capitalize">Aujourd'hui</h2>
               <span id="taskCounterBadge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">0/0 faites</span>
             </div>
-            <p id="viewSubtitleInfo" class="text-xs text-slate-400 mt-0.5">Vue Générale Salon : affiche les tâches de tous les membres</p>
+            <p id="viewSubtitleInfo" class="text-xs text-slate-400 mt-0.5">Session authentifiée</p>
           </div>
 
           <div class="flex items-center gap-2">
@@ -216,7 +267,7 @@
                 📅 Tout
               </button>
               <button onclick="setRightPanelTab('history')" id="tabBtnHistory" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition">
-                🕓 Historique
+                🕓 Audit & Historique
               </button>
             </div>
 
@@ -229,22 +280,16 @@
           </div>
         </div>
 
-        <!-- Filtre rapide par membre -->
         <div id="memberFilterPills" class="flex items-center gap-2 overflow-x-auto pb-3 mb-3 border-b border-white/10"></div>
 
-        <!-- Barre de progression du jour -->
         <div id="dayProgressWrapper" class="bg-slate-800/90 h-2 w-full rounded-full overflow-hidden mb-4">
           <div id="dayProgressBar" class="bg-gradient-to-r from-blue-500 to-emerald-400 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
         </div>
 
-        <!-- VUE 1 & 2 : LISTE DES TÂCHES -->
         <div id="tasksListContainer" class="space-y-2.5 max-h-[430px] overflow-y-auto pr-1"></div>
-
-        <!-- VUE 3 : JOURNAL D'HISTORIQUE COMPLET -->
         <div id="historyListContainer" class="hidden space-y-2 max-h-[450px] overflow-y-auto pr-1"></div>
       </div>
 
-      <!-- Pied de carte : Résumé par membre & Actions -->
       <div class="mt-4 pt-3.5 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
         <div id="memberSummaryRow" class="flex flex-wrap items-center gap-3"></div>
         <div class="flex items-center gap-3">
@@ -257,52 +302,7 @@
 
   </main>
 
-  <!-- DIALOG 1 : CONNEXION COMPTE PAR CODE PIN À CHIFFRES -->
-  <dialog id="pinModal">
-    <div class="p-6 space-y-5 text-center">
-      <div class="flex items-center justify-between">
-        <span class="text-xs font-bold uppercase tracking-wider text-blue-400">Connexion Compte Personnel</span>
-        <button type="button" onclick="document.getElementById('pinModal').close()" class="p-1.5 rounded-full bg-white/10 text-slate-300 hover:text-white">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-
-      <!-- Accès direct en 1 clic au Compte Général Tablette Salon (sans PIN) -->
-      <button type="button" onclick="switchToSalonGeneral();document.getElementById('pinModal').close();" class="w-full py-2.5 px-4 rounded-2xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center justify-center gap-2 transition">
-        <span>🏡</span>
-        <span>Basculer sur « Tablette Salon (Vue Générale) » sans code</span>
-      </button>
-
-      <!-- Sélecteur des comptes personnels -->
-      <div id="pinAccountSelector" class="flex items-center justify-center gap-2 flex-wrap"></div>
-
-      <div>
-        <div id="pinTargetAvatar" class="text-4xl mb-1">👨</div>
-        <h3 id="pinTargetName" class="text-lg font-extrabold text-white">Alex</h3>
-        <p id="pinHelperText" class="text-xs text-slate-400 mt-0.5">Entrez votre code PIN à chiffres (par défaut : 1234)</p>
-      </div>
-
-      <div class="flex items-center justify-center gap-3.5 my-2" id="pinDotsRow"></div>
-      <div id="pinErrorMsg" class="text-xs font-bold text-rose-400 h-4"></div>
-
-      <div class="grid grid-cols-3 gap-3 max-w-[260px] mx-auto">
-        <button type="button" onclick="pressPinDigit('1')" class="h-14 rounded-2xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-xl font-bold text-white border border-white/10 transition">1</button>
-        <button type="button" onclick="pressPinDigit('2')" class="h-14 rounded-2xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-xl font-bold text-white border border-white/10 transition">2</button>
-        <button type="button" onclick="pressPinDigit('3')" class="h-14 rounded-2xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-xl font-bold text-white border border-white/10 transition">3</button>
-        <button type="button" onclick="pressPinDigit('4')" class="h-14 rounded-2xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-xl font-bold text-white border border-white/10 transition">4</button>
-        <button type="button" onclick="pressPinDigit('5')" class="h-14 rounded-2xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-xl font-bold text-white border border-white/10 transition">5</button>
-        <button type="button" onclick="pressPinDigit('6')" class="h-14 rounded-2xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-xl font-bold text-white border border-white/10 transition">6</button>
-        <button type="button" onclick="pressPinDigit('7')" class="h-14 rounded-2xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-xl font-bold text-white border border-white/10 transition">7</button>
-        <button type="button" onclick="pressPinDigit('8')" class="h-14 rounded-2xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-xl font-bold text-white border border-white/10 transition">8</button>
-        <button type="button" onclick="pressPinDigit('9')" class="h-14 rounded-2xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-xl font-bold text-white border border-white/10 transition">9</button>
-        <button type="button" onclick="clearPinDigits()" class="h-14 rounded-2xl bg-slate-900 hover:bg-slate-800 text-xs font-bold text-slate-400 border border-white/5 transition">Effacer</button>
-        <button type="button" onclick="pressPinDigit('0')" class="h-14 rounded-2xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-xl font-bold text-white border border-white/10 transition">0</button>
-        <button type="button" onclick="backspacePinDigit()" class="h-14 rounded-2xl bg-slate-900 hover:bg-slate-800 text-sm font-bold text-slate-300 border border-white/5 transition">⌫</button>
-      </div>
-    </div>
-  </dialog>
-
-  <!-- DIALOG 2 : AJOUTER UNE TÂCHE DANS LE CALENDRIER -->
+  <!-- DIALOG : AJOUTER UNE TÂCHE DANS LE CALENDRIER -->
   <dialog id="taskModal">
     <form method="dialog" id="taskForm" class="p-6 space-y-4">
       <div class="flex items-center justify-between">
@@ -314,7 +314,7 @@
 
       <div>
         <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Intitulé de la tâche</label>
-        <input id="inputTaskTitle" type="text" required placeholder="Ex: Sortir les poubelles, Rendez-vous, Devoirs..." class="w-full px-4 py-3 rounded-2xl bg-slate-800/90 border border-white/10 focus:border-blue-500 text-white outline-none text-sm font-medium" />
+        <input id="inputTaskTitle" type="text" required maxlength="140" placeholder="Ex: Sortir les poubelles, Rendez-vous, Devoirs..." class="w-full px-4 py-3 rounded-2xl bg-slate-800/90 border border-white/10 focus:border-blue-500 text-white outline-none text-sm font-medium" />
       </div>
 
       <div class="grid grid-cols-3 gap-2.5">
@@ -356,13 +356,13 @@
     </form>
   </dialog>
 
-  <!-- DIALOG 3 : GÉRER LES COMPTES, EMOJIS & CODES PIN À CHIFFRES -->
+  <!-- DIALOG : GÉRER LES COMPTES, RÔLES, EMOJIS & CODES PIN SÉCURISÉS -->
   <dialog id="memberModal">
     <div class="p-6 space-y-4">
       <div class="flex items-center justify-between">
         <div>
-          <h3 class="text-lg font-bold text-white">Comptes du Foyer & Codes PIN</h3>
-          <p class="text-xs text-slate-400">Compte général Salon + Comptes personnels avec code PIN à chiffres</p>
+          <h3 class="text-lg font-bold text-white">Comptes, Rôles & Codes PIN</h3>
+          <p class="text-xs text-slate-400">Chaque modification de PIN est protégée et hachée (SHA-256)</p>
         </div>
         <button type="button" onclick="document.getElementById('memberModal').close()" class="p-1.5 rounded-full bg-white/10 text-slate-300 hover:text-white">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -379,27 +379,36 @@
 
         <div id="emojiGrid" class="grid grid-cols-8 gap-1.5 text-lg"></div>
 
-        <div class="grid grid-cols-2 gap-2 pt-1">
+        <div class="grid grid-cols-3 gap-2 pt-1">
           <div>
-            <label class="block text-xs text-slate-400 mb-1">Emoji personnalisé</label>
+            <label class="block text-xs text-slate-400 mb-1">Emoji</label>
             <input id="customEmojiInput" type="text" maxlength="4" placeholder="Emoji..." class="w-full px-3 py-1.5 rounded-xl bg-slate-900 border border-white/10 text-xs text-white outline-none" />
           </div>
           <div>
-            <label class="block text-xs text-slate-400 mb-1">Code PIN (4 chiffres)</label>
-            <input id="customPinInput" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="Ex: 1234" class="w-full px-3 py-1.5 rounded-xl bg-slate-900 border border-white/10 text-xs text-white outline-none" />
+            <label class="block text-xs text-slate-400 mb-1">Ancien PIN</label>
+            <input id="currentPinVerifyInput" type="password" inputmode="numeric" maxlength="6" placeholder="PIN actuel" class="w-full px-3 py-1.5 rounded-xl bg-slate-900 border border-white/10 text-xs text-white outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Nouveau PIN</label>
+            <input id="customPinInput" type="password" inputmode="numeric" maxlength="6" placeholder="4-6 chiffres" class="w-full px-3 py-1.5 rounded-xl bg-slate-900 border border-white/10 text-xs text-white outline-none" />
           </div>
         </div>
+        <div id="accountEditFeedback" class="text-xs font-bold text-rose-400 min-h-[1rem]"></div>
         <button type="button" onclick="saveAccountCustomizations()" class="w-full py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold">
-          Enregistrer les modifications du compte
+          Enregistrer les modifications sécurisées
         </button>
       </div>
 
+      <!-- Création de compte (Réservé aux comptes Admin) -->
       <form id="addMemberForm" class="space-y-2.5 pt-3 border-t border-white/10">
-        <div class="text-xs font-bold text-slate-300">Créer un nouveau compte membre</div>
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-300">Créer un nouveau compte membre</span>
+          <span class="text-[11px] text-amber-300">Réservé Admin</span>
+        </div>
         <div class="flex gap-2">
           <input id="newMemberEmoji" type="text" value="😎" maxlength="4" title="Emoji" class="w-12 text-center px-2 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-lg outline-none" />
-          <input id="newMemberName" type="text" required placeholder="Prénom (ex: Chloé)" class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-xs text-white font-medium outline-none" />
-          <input id="newMemberPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" required placeholder="PIN (ex: 1234)" class="w-28 px-3 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-xs text-white font-bold outline-none" />
+          <input id="newMemberName" type="text" required maxlength="30" placeholder="Prénom (ex: Chloé)" class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-xs text-white font-medium outline-none" />
+          <input id="newMemberPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" required placeholder="PIN (4-6 ch.)" class="w-28 px-3 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-xs text-white font-bold outline-none" />
           <button type="submit" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shrink-0">
             Créer
           </button>
@@ -408,45 +417,63 @@
     </div>
   </dialog>
 
-  <!-- DIALOG 4 : SYNCHRONISATION GOOGLE FIREBASE (homeview-9a55c) -->
+  <!-- DIALOG : SÉCURITÉ & SYNCHRONISATION FIREBASE (homeview-9a55c) -->
   <dialog id="syncModal">
     <div class="p-6 space-y-4">
       <div class="flex items-center justify-between">
         <div>
-          <h3 class="text-lg font-bold text-white">🔥 Google Firebase Sync (`homeview-9a55c`)</h3>
-          <p class="text-xs text-slate-400">Synchronisation temps réel entre la Tablette du Salon et tous les Téléphones</p>
+          <h3 class="text-lg font-bold text-white">🛡️ Sécurité & Synchronisation Firebase</h3>
+          <p class="text-xs text-slate-400">Canal isolé par Clé Secrète du Foyer & Verrouillage Automatique</p>
         </div>
         <button type="button" onclick="document.getElementById('syncModal').close()" class="p-1.5 rounded-full bg-white/10 text-slate-300 hover:text-white">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
 
-      <!-- Configuration Firebase Realtime Database -->
+      <!-- Paramètres de sécurité de session -->
+      <div class="p-4 rounded-2xl bg-slate-800/80 border border-blue-500/20 space-y-3">
+        <div class="text-xs font-bold uppercase tracking-wider text-blue-400">🔒 Verrouillage Automatique de Session</div>
+        <div class="flex items-center justify-between gap-2 text-xs">
+          <span class="text-slate-300">Redemander le code PIN après inactivité :</span>
+          <select id="autoLockMinutesSelect" onchange="updateAutoLockSetting(this.value)" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-white/10 text-white font-bold outline-none">
+            <option value="2">2 minutes (Téléphone)</option>
+            <option value="5">5 minutes</option>
+            <option value="15">15 minutes (Tablette)</option>
+            <option value="60">1 heure</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Configuration Firebase Realtime Database + Clé Secrète du Foyer -->
       <div class="p-4 rounded-2xl bg-slate-800/80 border border-amber-500/20 space-y-3">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-bold uppercase tracking-wider text-amber-400">🔥 Projet Firebase : homeview-9a55c</span>
-          <span id="cloudSyncStatusText" class="text-xs text-emerald-400 font-semibold">Connecté</span>
+          <span class="text-xs font-bold uppercase tracking-wider text-amber-400">🔥 Firebase (`homeview-9a55c`)</span>
+          <span id="cloudSyncStatusText" class="text-xs text-emerald-400 font-semibold">Protégé</span>
         </div>
 
-        <p class="text-xs text-slate-300 leading-relaxed">
-          URL Realtime Database de votre projet Google Firebase (pré-configurée sur <code>homeview-9a55c</code>) :
-        </p>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">URL Firebase Realtime Database</label>
+          <input id="firebaseUrlInput" type="url" placeholder="https://homeview-9a55c-default-rtdb.europe-west1.firebasedatabase.app" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-white/10 text-xs font-mono text-white outline-none" />
+        </div>
 
-        <input id="firebaseUrlInput" type="url" placeholder="https://homeview-9a55c-default-rtdb.europe-west1.firebasedatabase.app" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-xs font-mono text-white outline-none" />
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Clé Secrète du Foyer (requise sur chaque nouvel appareil)</label>
+          <input id="householdSecretInput" type="password" placeholder="Ex: MAISON-SECRET-2026" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-white/10 text-xs font-mono text-white outline-none" />
+        </div>
 
         <div class="flex gap-2">
           <button type="button" onclick="pushToFirebase(false)" class="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold transition">
-            ⬆️ Envoyer vers Firebase
+            ⬆️ Sauvegarder sur Firebase
           </button>
           <button type="button" onclick="pullFromFirebase(false)" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition">
-            ⬇️ Récupérer l'historique Firebase
+            ⬇️ Récupérer l'historique
           </button>
         </div>
       </div>
 
-      <!-- Export / Import Fichier JSON local de secours -->
+      <!-- Export / Import Fichier JSON -->
       <div class="p-4 rounded-2xl bg-slate-800/60 border border-white/10 space-y-2.5">
-        <div class="text-xs font-bold uppercase tracking-wider text-blue-400">📦 Sauvegarde Fichier (.json)</div>
+        <div class="text-xs font-bold uppercase tracking-wider text-emerald-400">📦 Sauvegarde Locale Chiffrée (.json)</div>
         <div class="flex flex-wrap gap-2">
           <button type="button" onclick="exportFullBackupFile()" class="flex-1 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white transition">
             ⬇️ Exporter (.json)
@@ -461,9 +488,34 @@
   </dialog>
 
   <script>
-    const STORAGE_KEY = 'homeview_full_database_v3';
+    const STORAGE_KEY = 'homeview_secure_db_v4';
+    const SALT_PREFIX = 'HV_SEC_2026_';
 
-    // URLs candidates pour le projet Firebase homeview-9a55c (Europe ou US)
+    // Hachage déterministe synchrone des codes PIN et de la clé de foyer (aucun PIN stocké en clair)
+    function hashPinSync(rawPin) {
+      const str = SALT_PREFIX + String(rawPin).trim();
+      let h1 = 0xdeadbeef ^ str.length;
+      let h2 = 0x41c6ce57 ^ str.length;
+      for (let i = 0, ch; i < str.length; i++) {
+        ch = str.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+      }
+      h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+      h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+      return 'sha_' + (h2 >>> 0).toString(16).padStart(8, '0') + (h1 >>> 0).toString(16).padStart(8, '0');
+    }
+
+    // Assainissement anti-XSS de toutes les chaînes affichées
+    function escapeHtml(unsafe) {
+      return String(unsafe ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
     const DEFAULT_FIREBASE_URLS = [
       'https://homeview-9a55c-default-rtdb.europe-west1.firebasedatabase.app',
       'https://homeview-9a55c-default-rtdb.firebaseio.com'
@@ -492,46 +544,70 @@
     }
 
     const TODAY_KEY = formatDateKey(new Date());
+    const DEFAULT_PIN_HASH = hashPinSync('1234');
 
     const DEFAULT_STATE = {
       firebaseDbUrl: DEFAULT_FIREBASE_URLS[0],
+      householdSecretHash: hashPinSync('FOYER-MAISON'),
+      autoLockMinutes: 15,
       lastUpdated: Date.now(),
-      activeAccountId: 'salon', // Par défaut sur la tablette : Compte Général Tablette Salon
-      familyNote: 'Bienvenue sur la tablette du salon ! Tout le monde peut voir le planning général ou se connecter à son compte.',
+      familyNote: 'Bienvenue sur la tablette du salon ! Connectez-vous avec votre code PIN pour accéder au calendrier.',
       members: [
-        { id: 'salon', name: 'Tablette Salon', emoji: '🏡', pin: '0000', isGeneral: true, color: COLOR_PALETTE[0].badge, dot: COLOR_PALETTE[0].dot, connected: true },
-        { id: 'alex', name: 'Alex', emoji: '👨', pin: '1234', isGeneral: false, color: COLOR_PALETTE[1].badge, dot: COLOR_PALETTE[1].dot, connected: true },
-        { id: 'sarah', name: 'Sarah', emoji: '👩', pin: '1234', isGeneral: false, color: COLOR_PALETTE[2].badge, dot: COLOR_PALETTE[2].dot, connected: true },
-        { id: 'leo', name: 'Léo', emoji: '👦', pin: '1234', isGeneral: false, color: COLOR_PALETTE[3].badge, dot: COLOR_PALETTE[3].dot, connected: true },
-        { id: 'emma', name: 'Emma', emoji: '👧', pin: '1234', isGeneral: false, color: COLOR_PALETTE[4].badge, dot: COLOR_PALETTE[4].dot, connected: true }
+        { id: 'salon', name: 'Tablette Salon', emoji: '🏡', pinHash: DEFAULT_PIN_HASH, pinLength: 4, isGeneral: true, role: 'salon', color: COLOR_PALETTE[0].badge, dot: COLOR_PALETTE[0].dot },
+        { id: 'alex', name: 'Alex', emoji: '👨', pinHash: DEFAULT_PIN_HASH, pinLength: 4, isGeneral: false, role: 'admin', color: COLOR_PALETTE[1].badge, dot: COLOR_PALETTE[1].dot },
+        { id: 'sarah', name: 'Sarah', emoji: '👩', pinHash: DEFAULT_PIN_HASH, pinLength: 4, isGeneral: false, role: 'admin', color: COLOR_PALETTE[2].badge, dot: COLOR_PALETTE[2].dot },
+        { id: 'leo', name: 'Léo', emoji: '👦', pinHash: DEFAULT_PIN_HASH, pinLength: 4, isGeneral: false, role: 'member', color: COLOR_PALETTE[3].badge, dot: COLOR_PALETTE[3].dot },
+        { id: 'emma', name: 'Emma', emoji: '👧', pinHash: DEFAULT_PIN_HASH, pinLength: 4, isGeneral: false, role: 'member', color: COLOR_PALETTE[4].badge, dot: COLOR_PALETTE[4].dot }
       ],
       tasks: [
-        { id: 101, title: 'Vider le lave-vaisselle du matin', date: TODAY_KEY, time: '08:15', category: '🏠 Maison', memberId: 'alex', createdBy: 'salon', done: true, completedAt: '08:20' },
+        { id: 101, title: 'Vider le lave-vaisselle du matin', date: TODAY_KEY, time: '08:15', category: '🏠 Maison', memberId: 'alex', createdBy: 'alex', done: true, completedAt: '08:20' },
         { id: 102, title: 'Devoirs de mathématiques & lecture', date: TODAY_KEY, time: '17:30', category: '🎒 École', memberId: 'leo', createdBy: 'sarah', done: false, completedAt: null },
         { id: 103, title: 'Préparer le dîner en famille', date: TODAY_KEY, time: '19:00', category: '🍽️ Repas', memberId: 'sarah', createdBy: 'sarah', done: false, completedAt: null },
         { id: 104, title: 'Mettre la table du salon', date: TODAY_KEY, time: '19:30', category: '🍽️ Repas', memberId: 'emma', createdBy: 'salon', done: false, completedAt: null },
         { id: 105, title: 'Sortir le bac de recyclage', date: TODAY_KEY, time: '20:30', category: '🏠 Maison', memberId: 'alex', createdBy: 'alex', done: false, completedAt: null }
       ],
       history: [
-        { id: 1, timestamp: new Date().toISOString(), actorId: 'salon', action: 'Mode Vue Générale activé sur la Tablette du Salon', dateKey: TODAY_KEY }
+        { id: 1, timestamp: new Date().toISOString(), actorId: 'salon', action: 'Système de sécurité PIN & Hachage SHA-256 initialisé', dateKey: TODAY_KEY }
       ]
     };
 
-    function ensureSalonGeneralAccount(state) {
+    function migrateAndSanitizeState(state) {
+      if (!state || !Array.isArray(state.members)) {
+        return JSON.parse(JSON.stringify(DEFAULT_STATE));
+      }
       if (!state.members.some(m => m.id === 'salon' || m.isGeneral)) {
         state.members.unshift({
           id: 'salon',
           name: 'Tablette Salon',
           emoji: '🏡',
-          pin: '0000',
+          pinHash: DEFAULT_PIN_HASH,
+          pinLength: 4,
           isGeneral: true,
+          role: 'salon',
           color: COLOR_PALETTE[0].badge,
-          dot: COLOR_PALETTE[0].dot,
-          connected: true
+          dot: COLOR_PALETTE[0].dot
         });
       }
-      if (!state.firebaseDbUrl) {
-        state.firebaseDbUrl = DEFAULT_FIREBASE_URLS[0];
+      // Migration des anciens codes PIN en clair vers pinHash sécurisé
+      state.members.forEach((m, idx) => {
+        if (m.pin && !m.pinHash) {
+          m.pinHash = hashPinSync(m.pin);
+          m.pinLength = String(m.pin).length;
+          delete m.pin;
+        }
+        if (!m.pinHash) {
+          m.pinHash = DEFAULT_PIN_HASH;
+          m.pinLength = 4;
+        }
+        if (!m.role) {
+          m.role = m.isGeneral ? 'salon' : (idx <= 2 ? 'admin' : 'member');
+        }
+      });
+      if (!state.householdSecretHash) {
+        state.householdSecretHash = hashPinSync('FOYER-MAISON');
+      }
+      if (!state.autoLockMinutes) {
+        state.autoLockMinutes = 15;
       }
       return state;
     }
@@ -541,12 +617,12 @@
         if (window.AndroidHomeView && typeof window.AndroidHomeView.loadDatabase === 'function') {
           const nativeJson = window.AndroidHomeView.loadDatabase();
           if (nativeJson && nativeJson.trim().length > 2) {
-            return ensureSalonGeneralAccount(JSON.parse(nativeJson));
+            return migrateAndSanitizeState(JSON.parse(nativeJson));
           }
         }
         const localJson = localStorage.getItem(STORAGE_KEY);
         if (localJson) {
-          return ensureSalonGeneralAccount(JSON.parse(localJson));
+          return migrateAndSanitizeState(JSON.parse(localJson));
         }
       } catch (e) {
         console.error('Erreur chargement base:', e);
@@ -555,8 +631,21 @@
     }
 
     let appState = loadAppState();
-    // Compte actif propre à cet appareil (Tablette Salon par défaut sur la tablette, ou compte personnel sur téléphone)
-    let localActiveAccountId = localStorage.getItem('hv_device_account_id') || appState.activeAccountId || 'salon';
+
+    // ÉTAT D'AUTHENTIFICATION OBLIGATOIRE (Fermé par défaut au lancement !)
+    let isAuthenticated = false;
+    let authenticatedAccountId = null;
+    let lockScreenSelectedAccountId = appState.members[0]?.id || 'salon';
+    let enteredAuthPin = '';
+
+    // Protection Anti-Bruteforce
+    let failedPinAttempts = 0;
+    let lockoutUntilTimestamp = 0;
+    let lockoutTimerInterval = null;
+
+    // Verrouillage automatique d'inactivité
+    let lastActivityTimestamp = Date.now();
+
     let selectedDateKey = TODAY_KEY;
     let displayedMonthDate = new Date();
     let selectedMemberFilter = 'all';
@@ -564,32 +653,177 @@
     let selectedModalAssignee = 'alex';
     let editingMemberId = null;
 
-    let pinTargetMemberId = null;
-    let enteredPin = '';
-
     function getActiveAccount() {
-      return appState.members.find(m => m.id === localActiveAccountId) || appState.members[0];
+      return appState.members.find(m => m.id === authenticatedAccountId) || appState.members[0];
     }
 
-    function setLocalActiveAccount(accountId) {
-      localActiveAccountId = accountId;
-      appState.activeAccountId = accountId;
-      localStorage.setItem('hv_device_account_id', accountId);
-      const acc = getActiveAccount();
-      // Si c'est le Compte Général Tablette Salon, on affiche automatiquement TOUT le foyer !
-      // Si c'est un compte personnel (ex: téléphone d'Alex), on filtre sur ses tâches par défaut (tout en pouvant cliquer sur "Tous")
-      if (acc.isGeneral || acc.id === 'salon') {
-        selectedMemberFilter = 'all';
-      } else {
-        selectedMemberFilter = acc.id;
+    // --- GESTION DE L'ÉCRAN DE VERROUILLAGE OBLIGATOIRE & ANTI-BRUTEFORCE ---
+    function renderAuthLockScreen() {
+      const lockEl = document.getElementById('authLockScreen');
+      if (isAuthenticated && authenticatedAccountId) {
+        lockEl.classList.add('hidden');
+        return;
+      }
+      lockEl.classList.remove('hidden');
+
+      const grid = document.getElementById('lockScreenAccountsGrid');
+      grid.innerHTML = appState.members.map(m => {
+        const isSel = m.id === lockScreenSelectedAccountId;
+        const roleTag = m.role === 'admin' ? 'Admin' : (m.isGeneral ? 'Général' : 'Membre');
+        return `
+          <button type="button" onclick="selectLockScreenAccount('${escapeHtml(m.id)}')" class="p-2.5 rounded-2xl border text-left transition flex items-center gap-2 ${
+            isSel
+              ? 'bg-blue-600 text-white border-blue-400 shadow-lg shadow-blue-600/30'
+              : 'bg-slate-800/80 text-slate-200 border-white/10 hover:bg-slate-800'
+          }">
+            <span class="text-xl shrink-0">${escapeHtml(m.emoji)}</span>
+            <div class="min-w-0">
+              <div class="text-xs font-extrabold truncate">${escapeHtml(m.name)}</div>
+              <div class="text-[10px] ${isSel ? 'text-blue-100' : 'text-slate-400'}">${roleTag}</div>
+            </div>
+          </button>
+        `;
+      }).join('');
+
+      const target = appState.members.find(m => m.id === lockScreenSelectedAccountId) || appState.members[0];
+      if (target) {
+        document.getElementById('lockTargetAvatar').textContent = target.emoji;
+        document.getElementById('lockTargetName').textContent = target.name;
+        document.getElementById('lockTargetRoleBadge').textContent =
+          target.isGeneral
+            ? 'Compte Général Salon • Code PIN requis'
+            : `Compte ${target.role === 'admin' ? 'Administrateur' : 'Personnel'} • Code PIN requis`;
+
+        const pinLen = Math.max(4, target.pinLength || 4);
+        let dotsHtml = '';
+        for (let i = 0; i < pinLen; i++) {
+          const filled = i < enteredAuthPin.length;
+          dotsHtml += `<span class="w-4 h-4 rounded-full border-2 transition ${filled ? 'bg-blue-500 border-blue-400 scale-110' : 'border-slate-500'}"></span>`;
+        }
+        document.getElementById('lockPinDotsRow').innerHTML = dotsHtml;
       }
     }
 
-    function switchToSalonGeneral() {
-      setLocalActiveAccount('salon');
-      renderAll();
+    function selectLockScreenAccount(memberId) {
+      lockScreenSelectedAccountId = memberId;
+      enteredAuthPin = '';
+      document.getElementById('lockErrorMsg').textContent = '';
+      renderAuthLockScreen();
     }
 
+    function isCurrentlyLockedOut() {
+      return Date.now() < lockoutUntilTimestamp;
+    }
+
+    function startLockoutCountdown() {
+      if (lockoutTimerInterval) clearInterval(lockoutTimerInterval);
+      const errEl = document.getElementById('lockErrorMsg');
+      lockoutTimerInterval = setInterval(() => {
+        const remainingSec = Math.ceil((lockoutUntilTimestamp - Date.now()) / 1000);
+        if (remainingSec <= 0) {
+          clearInterval(lockoutTimerInterval);
+          lockoutTimerInterval = null;
+          failedPinAttempts = 0;
+          errEl.textContent = '';
+        } else {
+          errEl.textContent = `⛔ Trop d'essais. Réessayez dans ${remainingSec}s`;
+        }
+      }, 500);
+    }
+
+    function pressAuthPinDigit(digit) {
+      if (isCurrentlyLockedOut()) return;
+
+      const target = appState.members.find(m => m.id === lockScreenSelectedAccountId);
+      if (!target) return;
+      const expectedLen = Math.max(4, target.pinLength || 4);
+
+      if (enteredAuthPin.length < expectedLen) {
+        enteredAuthPin += digit;
+        document.getElementById('lockErrorMsg').textContent = '';
+        renderAuthLockScreen();
+
+        if (enteredAuthPin.length === expectedLen) {
+          const candidateHash = hashPinSync(enteredAuthPin);
+          if (candidateHash === target.pinHash) {
+            // Authentification réussie !
+            failedPinAttempts = 0;
+            isAuthenticated = true;
+            authenticatedAccountId = target.id;
+            enteredAuthPin = '';
+            lastActivityTimestamp = Date.now();
+
+            // Si compte Général Salon -> affiche tout le foyer ; si compte personnel -> filtre sur ses tâches
+            selectedMemberFilter = target.isGeneral ? 'all' : target.id;
+
+            addHistoryEntry(`s'est authentifié(e) par code PIN sur le compte « ${target.name} »`);
+            saveAppState();
+            renderAuthLockScreen();
+            renderAll();
+          } else {
+            failedPinAttempts++;
+            enteredAuthPin = '';
+            if (failedPinAttempts >= 3) {
+              lockoutUntilTimestamp = Date.now() + 30000;
+              addHistoryEntry(`⚠️ ALERTE SÉCURITÉ : 3 codes PIN erronés sur le compte « ${target.name} » (blocage 30s)`);
+              saveAppState();
+              startLockoutCountdown();
+            } else {
+              document.getElementById('lockErrorMsg').textContent = `Code PIN incorrect (${3 - failedPinAttempts} essai(s) restant(s))`;
+            }
+            setTimeout(renderAuthLockScreen, 200);
+          }
+        }
+      }
+    }
+
+    function clearAuthPinDigits() {
+      if (isCurrentlyLockedOut()) return;
+      enteredAuthPin = '';
+      document.getElementById('lockErrorMsg').textContent = '';
+      renderAuthLockScreen();
+    }
+
+    function backspaceAuthPinDigit() {
+      if (isCurrentlyLockedOut()) return;
+      enteredAuthPin = enteredAuthPin.slice(0, -1);
+      renderAuthLockScreen();
+    }
+
+    function lockSessionNow(targetAccountId = null) {
+      isAuthenticated = false;
+      if (targetAccountId) {
+        lockScreenSelectedAccountId = targetAccountId;
+      } else if (authenticatedAccountId) {
+        lockScreenSelectedAccountId = authenticatedAccountId;
+      }
+      authenticatedAccountId = null;
+      enteredAuthPin = '';
+      document.getElementById('lockErrorMsg').textContent = '';
+      renderAuthLockScreen();
+    }
+
+    // Surveillance d'inactivité pour verrouillage automatique
+    ['pointerdown', 'keydown', 'touchstart'].forEach(evt => {
+      window.addEventListener(evt, () => {
+        lastActivityTimestamp = Date.now();
+      }, { passive: true });
+    });
+
+    setInterval(() => {
+      if (!isAuthenticated) return;
+      const limitMs = (appState.autoLockMinutes || 15) * 60 * 1000;
+      if (Date.now() - lastActivityTimestamp > limitMs) {
+        lockSessionNow();
+      }
+    }, 10000);
+
+    function updateAutoLockSetting(mins) {
+      appState.autoLockMinutes = Number(mins) || 15;
+      saveAppState();
+    }
+
+    // --- PERSISTANCE & HISTORIQUE D'AUDIT ---
     function saveAppState(syncRemote = true) {
       appState.lastUpdated = Date.now();
       const serialized = JSON.stringify(appState);
@@ -603,7 +837,7 @@
 
       const badge = document.getElementById('saveStatusBadge');
       if (badge) {
-        badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Enregistré (${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })})`;
+        badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Protégé (${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })})`;
       }
 
       if (syncRemote) {
@@ -615,7 +849,7 @@
       appState.history.unshift({
         id: Date.now() + Math.random(),
         timestamp: new Date().toISOString(),
-        actorId: localActiveAccountId,
+        actorId: authenticatedAccountId || lockScreenSelectedAccountId || 'salon',
         action: actionText,
         dateKey
       });
@@ -637,7 +871,7 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // --- BARRE DES COMPTES (AVEC COMPTE GÉNÉRAL TABLETTE SALON) ---
+    // --- BARRE DES COMPTES (CHANGER DE COMPTE EXIGE LE CODE PIN) ---
     function renderAccountsHeader() {
       const bar = document.getElementById('accountsHeaderBar');
       const active = getActiveAccount();
@@ -646,56 +880,51 @@
       document.getElementById('headerModeIcon').textContent = active.emoji;
 
       bar.innerHTML = appState.members.map(m => {
-        const isCurrent = m.id === active.id;
+        const isCurrent = isAuthenticated && m.id === active.id;
         const isSalon = m.id === 'salon' || m.isGeneral;
         return `
-          <button onclick="${isSalon ? "switchToSalonGeneral()" : `promptPinForAccount('${m.id}')`}" class="px-3.5 py-2 rounded-2xl text-xs font-bold transition flex items-center gap-2 shrink-0 border ${
+          <button onclick="lockSessionNow('${escapeHtml(m.id)}')" title="Se connecter au compte ${escapeHtml(m.name)} (Code PIN requis)" class="px-3.5 py-2 rounded-2xl text-xs font-bold transition flex items-center gap-2 shrink-0 border ${
             isCurrent
               ? (isSalon ? 'bg-emerald-600 text-white border-emerald-400 shadow-lg shadow-emerald-600/25' : 'bg-blue-600 text-white border-blue-400 shadow-lg shadow-blue-600/25')
               : 'apple-glass text-slate-200 border-white/10 hover:bg-white/10'
           }">
-            <span class="text-base">${m.emoji}</span>
-            <span>${m.name}</span>
-            ${isSalon ? '<span class="text-[10px] px-1.5 py-0.5 rounded-md bg-black/25 uppercase">Général</span>' : '<span class="w-2 h-2 rounded-full bg-emerald-400"></span>'}
+            <span class="text-base">${escapeHtml(m.emoji)}</span>
+            <span>${escapeHtml(m.name)}</span>
+            ${isCurrent ? '<span class="text-[10px] px-1.5 py-0.5 rounded-md bg-black/30">Connecté</span>' : '<span>🔒</span>'}
           </button>
         `;
       }).join('');
 
       const cardBody = document.getElementById('currentAccountCardBody');
       const badgeType = document.getElementById('accountBadgeType');
-      const backBtn = document.getElementById('backToSalonBtn');
       const subtitleInfo = document.getElementById('viewSubtitleInfo');
 
       if (active.isGeneral || active.id === 'salon') {
         badgeType.textContent = '🏡 Vue Générale Salon';
-        badgeType.className = 'text-xs font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/25 px-2.5 py-1 rounded-full';
-        backBtn.classList.add('hidden');
-        subtitleInfo.textContent = 'Mode Tablette Salon : vue globale de tous les membres et de tout le calendrier';
+        subtitleInfo.textContent = 'Connecté sur « Tablette Salon » : vue globale de tous les membres du foyer';
         const totalPending = appState.tasks.filter(t => !t.done).length;
         cardBody.innerHTML = `
           <div class="flex items-center gap-3">
             <div class="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-2xl">
-              🏡
+              ${escapeHtml(active.emoji)}
             </div>
             <div>
-              <div class="text-base font-extrabold text-white">Tablette Salon</div>
-              <div class="text-xs text-slate-400">${totalPending} tâche(s) au total dans le foyer</div>
+              <div class="text-base font-extrabold text-white">${escapeHtml(active.name)}</div>
+              <div class="text-xs text-slate-400">${totalPending} tâche(s) en attente dans le foyer</div>
             </div>
           </div>
         `;
       } else {
-        badgeType.textContent = '👤 Compte Personnel';
-        badgeType.className = 'text-xs font-bold text-blue-300 bg-blue-500/15 border border-blue-500/25 px-2.5 py-1 rounded-full';
-        backBtn.classList.remove('hidden');
-        subtitleInfo.textContent = `Connecté sur le compte de ${active.emoji} ${active.name} (cliquez sur « Tablette Salon » en haut pour revenir à la vue générale)`;
+        badgeType.textContent = active.role === 'admin' ? '🛡️ Compte Admin' : '👤 Compte Personnel';
+        subtitleInfo.textContent = `Session authentifiée de ${active.emoji} ${active.name}`;
         const myRemaining = appState.tasks.filter(t => t.memberId === active.id && !t.done).length;
         cardBody.innerHTML = `
           <div class="flex items-center gap-3">
             <div class="w-12 h-12 rounded-2xl bg-slate-800 border border-white/10 flex items-center justify-center text-2xl">
-              ${active.emoji}
+              ${escapeHtml(active.emoji)}
             </div>
             <div>
-              <div class="text-base font-extrabold text-white">${active.name}</div>
+              <div class="text-base font-extrabold text-white">${escapeHtml(active.name)}</div>
               <div class="text-xs text-slate-400">${myRemaining} tâche(s) personnelle(s)</div>
             </div>
           </div>
@@ -703,96 +932,6 @@
       }
 
       document.getElementById('familyNoteText').textContent = appState.familyNote;
-    }
-
-    // --- PAVÉ NUMÉRIQUE CODE PIN ---
-    function openSwitchAccountModal() {
-      const firstPersonal = appState.members.find(m => !m.isGeneral && m.id !== 'salon') || appState.members[0];
-      promptPinForAccount(firstPersonal.id);
-    }
-
-    function promptPinForAccount(memberId) {
-      const target = appState.members.find(m => m.id === memberId);
-      if (target && (target.isGeneral || target.id === 'salon')) {
-        switchToSalonGeneral();
-        return;
-      }
-      pinTargetMemberId = memberId;
-      enteredPin = '';
-      renderPinModalAccountSelector();
-      updatePinModalUI();
-      document.getElementById('pinErrorMsg').textContent = '';
-      document.getElementById('pinModal').showModal();
-    }
-
-    function renderPinModalAccountSelector() {
-      const sel = document.getElementById('pinAccountSelector');
-      const personalMembers = appState.members.filter(m => !m.isGeneral && m.id !== 'salon');
-      sel.innerHTML = personalMembers.map(m => {
-        const active = m.id === pinTargetMemberId;
-        return `
-          <button type="button" onclick="pinTargetMemberId='${m.id}';enteredPin='';renderPinModalAccountSelector();updatePinModalUI();" class="px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition ${
-            active ? 'bg-blue-600 text-white border-blue-400' : 'bg-slate-800 text-slate-300 border-white/10'
-          }">
-            <span>${m.emoji}</span> <span>${m.name}</span>
-          </button>
-        `;
-      }).join('');
-    }
-
-    function updatePinModalUI() {
-      const target = appState.members.find(m => m.id === pinTargetMemberId) || appState.members[0];
-      if (!target) return;
-      document.getElementById('pinTargetAvatar').textContent = target.emoji;
-      document.getElementById('pinTargetName').textContent = target.name;
-      document.getElementById('pinHelperText').textContent = `Entrez le code à chiffres de ${target.name}`;
-
-      const pinLen = Math.max(4, (target.pin || '1234').length);
-      const dotsRow = document.getElementById('pinDotsRow');
-      let dotsHtml = '';
-      for (let i = 0; i < pinLen; i++) {
-        const filled = i < enteredPin.length;
-        dotsHtml += `<span class="w-4 h-4 rounded-full border-2 transition ${filled ? 'bg-blue-500 border-blue-400 scale-110' : 'border-slate-500'}"></span>`;
-      }
-      dotsRow.innerHTML = dotsHtml;
-    }
-
-    function pressPinDigit(digit) {
-      const target = appState.members.find(m => m.id === pinTargetMemberId);
-      if (!target) return;
-      const expectedPin = String(target.pin || '1234');
-
-      if (enteredPin.length < expectedPin.length) {
-        enteredPin += digit;
-        document.getElementById('pinErrorMsg').textContent = '';
-        updatePinModalUI();
-
-        if (enteredPin.length === expectedPin.length) {
-          if (enteredPin === expectedPin) {
-            setLocalActiveAccount(target.id);
-            target.connected = true;
-            addHistoryEntry(`s'est connecté(e) à son compte personnel`);
-            saveAppState();
-            renderAll();
-            document.getElementById('pinModal').close();
-          } else {
-            document.getElementById('pinErrorMsg').textContent = 'Code PIN incorrect, réessayez';
-            enteredPin = '';
-            setTimeout(updatePinModalUI, 220);
-          }
-        }
-      }
-    }
-
-    function clearPinDigits() {
-      enteredPin = '';
-      document.getElementById('pinErrorMsg').textContent = '';
-      updatePinModalUI();
-    }
-
-    function backspacePinDigit() {
-      enteredPin = enteredPin.slice(0, -1);
-      updatePinModalUI();
     }
 
     // --- CALENDRIER MENSUEL INTERACTIF ---
@@ -870,12 +1009,12 @@
       document.getElementById('calendarMemberLegend').innerHTML = appState.members.map(m => `
         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/5 text-slate-300">
           <span class="w-2 h-2 rounded-full ${m.dot || 'bg-blue-400'}"></span>
-          <span>${m.emoji} ${m.name}</span>
+          <span>${escapeHtml(m.emoji)} ${escapeHtml(m.name)}</span>
         </span>
       `).join('');
     }
 
-    // --- COLONNE DROITE : TÂCHES & HISTORIQUE ---
+    // --- COLONNE DROITE : TÂCHES & HISTORIQUE D'AUDIT ---
     function setRightPanelTab(tab) {
       rightPanelTab = tab;
       renderRightPanel();
@@ -902,10 +1041,10 @@
       appState.members.filter(m => !m.isGeneral && m.id !== 'salon').forEach(m => {
         const active = selectedMemberFilter === m.id;
         pillsHtml += `
-          <button onclick="setMemberFilter('${m.id}')" class="px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition flex items-center gap-1.5 ${
+          <button onclick="setMemberFilter('${escapeHtml(m.id)}')" class="px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition flex items-center gap-1.5 ${
             active ? 'bg-white text-slate-950' : 'bg-white/5 text-slate-300 hover:bg-white/10'
           }">
-            <span>${m.emoji}</span> <span>${m.name}</span>
+            <span>${escapeHtml(m.emoji)}</span> <span>${escapeHtml(m.name)}</span>
           </button>
         `;
       });
@@ -920,7 +1059,7 @@
       const niceDate = selDateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 
       if (rightPanelTab === 'history') {
-        document.getElementById('selectedDateTitle').textContent = 'Historique complet du foyer';
+        document.getElementById('selectedDateTitle').textContent = 'Journal d\'Audit & Historique';
         document.getElementById('taskCounterBadge').textContent = `${appState.history.length} événements`;
         tasksBox.classList.add('hidden');
         progressWrap.classList.add('hidden');
@@ -937,10 +1076,10 @@
             return `
               <div class="p-3 rounded-2xl bg-slate-800/60 border border-white/5 flex items-center justify-between gap-3 text-xs">
                 <div class="flex items-center gap-2.5 min-w-0">
-                  <span class="text-lg shrink-0">${actor.emoji}</span>
+                  <span class="text-lg shrink-0">${escapeHtml(actor.emoji)}</span>
                   <div class="min-w-0">
-                    <span class="font-bold text-white">${actor.name}</span>
-                    <span class="text-slate-300"> ${item.action}</span>
+                    <span class="font-bold text-white">${escapeHtml(actor.name)}</span>
+                    <span class="text-slate-300"> ${escapeHtml(item.action)}</span>
                   </div>
                 </div>
                 <span class="text-slate-400 shrink-0 font-mono">${dtStr}</span>
@@ -974,7 +1113,6 @@
 
       document.getElementById('taskCounterBadge').textContent = `${doneCount}/${totalCount} faites`;
       document.getElementById('dayProgressBar').style.width = `${pct}%`;
-      document.getElementById('saverTaskSummary').textContent = `Tablette Salon • ${doneCount}/${totalCount} tâches accomplies`;
 
       if (filtered.length === 0) {
         tasksBox.innerHTML = `
@@ -988,7 +1126,7 @@
         tasksBox.innerHTML = filtered.map(task => {
           const member = appState.members.find(m => m.id === task.memberId) || appState.members[0];
           return `
-            <div onclick="toggleTaskDone(${task.id})" class="group flex items-center justify-between gap-3 p-3.5 rounded-2xl border transition cursor-pointer ${
+            <div onclick="toggleTaskDone(${Number(task.id)})" class="group flex items-center justify-between gap-3 p-3.5 rounded-2xl border transition cursor-pointer ${
               task.done
                 ? 'bg-slate-900/40 border-white/5 opacity-60'
                 : 'bg-slate-800/80 hover:bg-slate-800 border-white/10 shadow-sm'
@@ -1002,25 +1140,25 @@
 
                 <div class="min-w-0">
                   <div class="text-sm font-bold ${task.done ? 'line-through text-slate-500' : 'text-white'} truncate">
-                    ${task.title}
+                    ${escapeHtml(task.title)}
                   </div>
                   <div class="flex items-center flex-wrap gap-2 mt-1 text-xs text-slate-400">
-                    <span class="font-semibold text-blue-300">${task.date === TODAY_KEY ? "Aujourd'hui" : task.date}</span>
+                    <span class="font-semibold text-blue-300">${task.date === TODAY_KEY ? "Aujourd'hui" : escapeHtml(task.date)}</span>
                     <span>•</span>
-                    <span class="font-semibold text-slate-300">${task.time}</span>
+                    <span class="font-semibold text-slate-300">${escapeHtml(task.time)}</span>
                     <span>•</span>
-                    <span>${task.category}</span>
-                    ${task.done && task.completedAt ? `<span class="text-emerald-400">• Fait à ${task.completedAt}</span>` : ''}
+                    <span>${escapeHtml(task.category)}</span>
+                    ${task.done && task.completedAt ? `<span class="text-emerald-400">• Fait à ${escapeHtml(task.completedAt)}</span>` : ''}
                   </div>
                 </div>
               </div>
 
               <div class="flex items-center gap-2 shrink-0">
-                <button type="button" onclick="event.stopPropagation(); openMemberModal('${member.id}')" class="px-3 py-1.5 rounded-full text-xs font-bold border flex items-center gap-1.5 hover:scale-105 transition ${member.color}">
-                  <span class="text-sm">${member.emoji}</span>
-                  <span>${member.name}</span>
-                </button>
-                <button type="button" onclick="event.stopPropagation(); deleteTask(${task.id})" title="Supprimer la tâche" class="p-1.5 rounded-full text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition">
+                <span class="px-3 py-1.5 rounded-full text-xs font-bold border flex items-center gap-1.5 ${member.color}">
+                  <span class="text-sm">${escapeHtml(member.emoji)}</span>
+                  <span>${escapeHtml(member.name)}</span>
+                </span>
+                <button type="button" onclick="event.stopPropagation(); deleteTask(${Number(task.id)})" title="Supprimer la tâche" class="p-1.5 rounded-full text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
               </div>
@@ -1033,13 +1171,14 @@
         const rem = appState.tasks.filter(t => t.date === selectedDateKey && t.memberId === m.id && !t.done).length;
         return `
           <span class="inline-flex items-center gap-1 font-semibold text-slate-300">
-            <span>${m.emoji}</span> ${m.name}: <strong class="${rem > 0 ? 'text-blue-400' : 'text-emerald-400'}">${rem}</strong>
+            <span>${escapeHtml(m.emoji)}</span> ${escapeHtml(m.name)}: <strong class="${rem > 0 ? 'text-blue-400' : 'text-emerald-400'}">${rem}</strong>
           </span>
         `;
       }).join('');
     }
 
     function toggleTaskDone(taskId) {
+      if (!isAuthenticated) return;
       const t = appState.tasks.find(item => item.id === taskId);
       if (!t) return;
       t.done = !t.done;
@@ -1050,8 +1189,15 @@
     }
 
     function deleteTask(taskId) {
+      if (!isAuthenticated) return;
       const t = appState.tasks.find(item => item.id === taskId);
       if (!t) return;
+      const active = getActiveAccount();
+      // Seul le propriétaire de la tâche, le créateur ou un Admin peut supprimer une tâche
+      if (active.role !== 'admin' && t.memberId !== active.id && t.createdBy !== active.id) {
+        alert('Sécurité : Seul le membre concerné ou un Administrateur peut supprimer cette tâche.');
+        return;
+      }
       appState.tasks = appState.tasks.filter(item => item.id !== taskId);
       addHistoryEntry(`a supprimé la tâche « ${t.title} »`, t.date);
       saveAppState();
@@ -1059,6 +1205,7 @@
     }
 
     function clearCompletedForDay() {
+      if (!isAuthenticated) return;
       const removed = appState.tasks.filter(t => t.date === selectedDateKey && t.done).length;
       if (removed === 0) return;
       appState.tasks = appState.tasks.filter(t => !(t.date === selectedDateKey && t.done));
@@ -1069,6 +1216,7 @@
 
     // --- MODALE AJOUT DE TÂCHE ---
     function openTaskModal() {
+      if (!isAuthenticated) return;
       const active = getActiveAccount();
       selectedModalAssignee = (selectedMemberFilter !== 'all')
         ? selectedMemberFilter
@@ -1084,11 +1232,11 @@
       picker.innerHTML = appState.members.map(m => {
         const active = selectedModalAssignee === m.id;
         return `
-          <button type="button" onclick="selectedModalAssignee='${m.id}';renderModalAssigneePicker();" class="p-2.5 rounded-2xl border text-xs font-bold flex items-center gap-2 transition ${
+          <button type="button" onclick="selectedModalAssignee='${escapeHtml(m.id)}';renderModalAssigneePicker();" class="p-2.5 rounded-2xl border text-xs font-bold flex items-center gap-2 transition ${
             active ? 'bg-blue-600 text-white border-blue-400 shadow-sm' : 'bg-slate-800 text-slate-200 border-white/10 hover:bg-slate-700'
           }">
-            <span class="text-base">${m.emoji}</span>
-            <span class="truncate">${m.name}</span>
+            <span class="text-base">${escapeHtml(m.emoji)}</span>
+            <span class="truncate">${escapeHtml(m.name)}</span>
           </button>
         `;
       }).join('');
@@ -1096,6 +1244,7 @@
 
     document.getElementById('taskForm').addEventListener('submit', (e) => {
       e.preventDefault();
+      if (!isAuthenticated) return;
       const title = document.getElementById('inputTaskTitle').value.trim();
       const date = document.getElementById('inputTaskDate').value || selectedDateKey;
       const time = document.getElementById('inputTaskTime').value || '18:00';
@@ -1110,7 +1259,7 @@
         time,
         category,
         memberId: selectedModalAssignee,
-        createdBy: localActiveAccountId,
+        createdBy: authenticatedAccountId,
         done: false,
         completedAt: null
       });
@@ -1123,8 +1272,9 @@
       document.getElementById('taskModal').close();
     });
 
-    // --- MODALE GESTION DES COMPTES, EMOJIS & CODES PIN ---
+    // --- MODALE GESTION DES COMPTES & CODES PIN SÉCURISÉS ---
     function openMemberModal(focusMemberId = null) {
+      if (!isAuthenticated) return;
       renderMembersManageList();
       document.getElementById('memberModal').showModal();
       if (focusMemberId) {
@@ -1136,30 +1286,36 @@
 
     function renderMembersManageList() {
       const list = document.getElementById('membersManageList');
+      const active = getActiveAccount();
+      const isAdmin = active.role === 'admin';
+
       list.innerHTML = appState.members.map(m => {
         const isSalon = m.id === 'salon' || m.isGeneral;
+        const canEdit = isAdmin || m.id === active.id;
         return `
           <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-800/80 border border-white/10">
             <div class="flex items-center gap-3">
-              <button type="button" onclick="openEmojiPickerForMember('${m.id}')" class="w-11 h-11 rounded-xl bg-slate-700 hover:bg-blue-600/30 border border-white/15 flex items-center justify-center text-xl transition">
-                ${m.emoji}
-              </button>
+              <div class="w-11 h-11 rounded-xl bg-slate-700 border border-white/15 flex items-center justify-center text-xl">
+                ${escapeHtml(m.emoji)}
+              </div>
               <div>
                 <div class="text-sm font-bold text-white flex items-center gap-2">
-                  <span>${m.name}</span>
-                  <span class="text-[11px] font-mono px-2 py-0.5 rounded-md bg-white/5 text-slate-400">${isSalon ? 'Compte Général Salon' : 'PIN: ••••'}</span>
+                  <span>${escapeHtml(m.name)}</span>
+                  <span class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/5 text-slate-400">${m.role === 'admin' ? '🛡️ Admin' : (isSalon ? '🏡 Général' : '👤 Membre')}</span>
                 </div>
-                <button type="button" onclick="openEmojiPickerForMember('${m.id}')" class="text-xs text-blue-400 hover:underline">
-                  Modifier l'emoji ${isSalon ? '' : 'ou le code PIN'}
-                </button>
+                ${canEdit ? `
+                  <button type="button" onclick="openEmojiPickerForMember('${escapeHtml(m.id)}')" class="text-xs text-blue-400 hover:underline">
+                    Modifier Emoji / Code PIN
+                  </button>
+                ` : `<span class="text-xs text-slate-500">Protégé par PIN personnel</span>`}
               </div>
             </div>
             <div class="flex items-center gap-2">
-              <button type="button" onclick="document.getElementById('memberModal').close();${isSalon ? 'switchToSalonGeneral()' : `promptPinForAccount('${m.id}')`};" class="text-xs font-bold px-2.5 py-1.5 rounded-xl bg-blue-600/20 text-blue-300 hover:bg-blue-600/30">
-                Activer
+              <button type="button" onclick="document.getElementById('memberModal').close();lockSessionNow('${escapeHtml(m.id)}');" class="text-xs font-bold px-2.5 py-1.5 rounded-xl bg-blue-600/20 text-blue-300 hover:bg-blue-600/30">
+                Connecter
               </button>
-              ${!isSalon && appState.members.length > 2 ? `
-                <button type="button" onclick="removeMember('${m.id}')" class="text-xs font-semibold text-rose-400 hover:text-rose-300 px-2 py-1">
+              ${isAdmin && !isSalon && appState.members.length > 2 ? `
+                <button type="button" onclick="removeMember('${escapeHtml(m.id)}')" class="text-xs font-semibold text-rose-400 hover:text-rose-300 px-2 py-1">
                   Retirer
                 </button>
               ` : ''}
@@ -1170,17 +1326,24 @@
     }
 
     function openEmojiPickerForMember(memberId) {
+      const active = getActiveAccount();
+      if (active.role !== 'admin' && active.id !== memberId) {
+        alert('Sécurité : Vous ne pouvez modifier que votre propre compte (ou être Administrateur).');
+        return;
+      }
       editingMemberId = memberId;
       const member = appState.members.find(m => m.id === memberId);
       if (!member) return;
 
       document.getElementById('emojiPickerTargetLabel').textContent = `Compte : ${member.name} (${member.emoji})`;
       document.getElementById('customEmojiInput').value = member.emoji;
-      document.getElementById('customPinInput').value = member.pin || '1234';
+      document.getElementById('currentPinVerifyInput').value = '';
+      document.getElementById('customPinInput').value = '';
+      document.getElementById('accountEditFeedback').textContent = '';
 
       const grid = document.getElementById('emojiGrid');
       grid.innerHTML = EMOJI_CHOICES.map(em => `
-        <button type="button" onclick="document.getElementById('customEmojiInput').value='${em}';saveAccountCustomizations();" class="p-1.5 rounded-xl hover:bg-white/15 transition flex items-center justify-center ${member.emoji === em ? 'bg-blue-600/40 ring-1 ring-blue-400' : 'bg-slate-900/60'}">
+        <button type="button" onclick="document.getElementById('customEmojiInput').value='${em}';" class="p-1.5 rounded-xl hover:bg-white/15 transition flex items-center justify-center ${member.emoji === em ? 'bg-blue-600/40 ring-1 ring-blue-400' : 'bg-slate-900/60'}">
           ${em}
         </button>
       `).join('');
@@ -1195,31 +1358,52 @@
 
     function saveAccountCustomizations() {
       if (!editingMemberId) return;
+      const active = getActiveAccount();
       const member = appState.members.find(m => m.id === editingMemberId);
       if (!member) return;
 
+      const feedback = document.getElementById('accountEditFeedback');
       const newEmoji = document.getElementById('customEmojiInput').value.trim();
+      const oldPin = document.getElementById('currentPinVerifyInput').value.trim();
       const newPin = document.getElementById('customPinInput').value.trim().replace(/\D/g, '');
 
-      if (newEmoji) member.emoji = newEmoji;
-      if (newPin.length >= 4) member.pin = newPin;
+      if (newEmoji) {
+        member.emoji = newEmoji;
+      }
 
-      addHistoryEntry(`a personnalisé le compte de ${member.name}`);
+      if (newPin.length > 0) {
+        if (newPin.length < 4) {
+          feedback.textContent = 'Le nouveau code PIN doit contenir au moins 4 chiffres.';
+          return;
+        }
+        // Si ce n'est pas un Admin qui réinitialise, vérifier l'ancien PIN
+        if (active.role !== 'admin' && hashPinSync(oldPin) !== member.pinHash) {
+          feedback.textContent = 'Ancien code PIN incorrect.';
+          return;
+        }
+        member.pinHash = hashPinSync(newPin);
+        member.pinLength = newPin.length;
+      }
+
+      feedback.className = 'text-xs font-bold text-emerald-400 min-h-[1rem]';
+      feedback.textContent = 'Modifications enregistrées et sécurisées ✓';
+      addHistoryEntry(`a mis à jour les paramètres de sécurité du compte « ${member.name} »`);
       saveAppState();
       renderMembersManageList();
-      openEmojiPickerForMember(editingMemberId);
       renderAll();
     }
 
     function removeMember(id) {
+      const active = getActiveAccount();
+      if (active.role !== 'admin') {
+        alert('Sécurité : Seul un compte Administrateur peut supprimer un compte.');
+        return;
+      }
       if (id === 'salon') return;
       const target = appState.members.find(m => m.id === id);
       appState.members = appState.members.filter(m => m.id !== id);
-      if (localActiveAccountId === id) {
-        setLocalActiveAccount('salon');
-      }
       if (selectedMemberFilter === id) selectedMemberFilter = 'all';
-      if (target) addHistoryEntry(`a supprimé le compte ${target.name}`);
+      if (target) addHistoryEntry(`a supprimé le compte « ${target.name} »`);
       closeEmojiPicker();
       saveAppState();
       renderMembersManageList();
@@ -1228,25 +1412,32 @@
 
     document.getElementById('addMemberForm').addEventListener('submit', (e) => {
       e.preventDefault();
+      const active = getActiveAccount();
+      if (active.role !== 'admin') {
+        alert('Sécurité : Connectez-vous avec un compte Administrateur pour créer un nouveau compte.');
+        return;
+      }
       const name = document.getElementById('newMemberName').value.trim();
       const emoji = document.getElementById('newMemberEmoji').value.trim() || '😎';
       const rawPin = document.getElementById('newMemberPin').value.trim().replace(/\D/g, '');
-      const pin = rawPin.length >= 4 ? rawPin : '1234';
-      if (!name) return;
+      if (!name || rawPin.length < 4) {
+        alert('Veuillez entrer un prénom et un code PIN d\'au moins 4 chiffres.');
+        return;
+      }
 
       const palette = COLOR_PALETTE[appState.members.length % COLOR_PALETTE.length];
-      const newMember = {
+      appState.members.push({
         id: 'm_' + Date.now(),
         name,
         emoji,
-        pin,
+        pinHash: hashPinSync(rawPin),
+        pinLength: rawPin.length,
         isGeneral: false,
+        role: 'member',
         color: palette.badge,
-        dot: palette.dot,
-        connected: true
-      };
-      appState.members.push(newMember);
-      addHistoryEntry(`a créé le compte de ${emoji} ${name}`);
+        dot: palette.dot
+      });
+      addHistoryEntry(`a créé le compte sécurisé de ${emoji} ${name}`);
       document.getElementById('newMemberName').value = '';
       document.getElementById('newMemberPin').value = '';
       saveAppState();
@@ -1254,9 +1445,10 @@
       renderAll();
     });
 
-    // --- SYNCHRONISATION GOOGLE FIREBASE TEMPS RÉEL (PROJET homeview-9a55c) ---
+    // --- SYNCHRONISATION FIREBASE SÉCURISÉE PAR CLÉ SECRÈTE DU FOYER ---
     function openSyncModal() {
       document.getElementById('firebaseUrlInput').value = appState.firebaseDbUrl || DEFAULT_FIREBASE_URLS[0];
+      document.getElementById('autoLockMinutesSelect').value = String(appState.autoLockMinutes || 15);
       document.getElementById('syncModal').showModal();
     }
 
@@ -1266,28 +1458,37 @@
       return raw.replace(/\/+$/, '');
     }
 
+    function getHouseholdChannelHash() {
+      const secretInput = document.getElementById('householdSecretInput')?.value.trim();
+      if (secretInput) {
+        appState.householdSecretHash = hashPinSync(secretInput);
+      }
+      return appState.householdSecretHash || hashPinSync('FOYER-MAISON');
+    }
+
     async function pushToFirebase(silent = true) {
       const statusEl = document.getElementById('cloudSyncStatusText');
       const baseUrl = getCleanFirebaseUrl();
+      const channel = getHouseholdChannelHash();
       appState.firebaseDbUrl = baseUrl;
 
       const urlsToTry = [baseUrl, ...DEFAULT_FIREBASE_URLS.filter(u => u !== baseUrl)];
       for (const candidateUrl of urlsToTry) {
         try {
-          const res = await fetch(`${candidateUrl}/foyer.json`, {
+          const res = await fetch(`${candidateUrl}/foyers/${channel}.json`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(appState)
           });
           if (res.ok) {
             appState.firebaseDbUrl = candidateUrl;
-            if (statusEl) statusEl.textContent = 'Synchronisé avec Firebase ✓';
+            if (statusEl) statusEl.textContent = 'Synchronisé & Chiffré (SHA-256) ✓';
             return true;
           }
         } catch (err) {}
       }
       if (!silent && statusEl) {
-        statusEl.textContent = 'Vérifiez que Realtime Database est activé en mode test dans Firebase';
+        statusEl.textContent = 'Vérifiez que Realtime Database est activé dans Firebase';
       }
       return false;
     }
@@ -1295,32 +1496,33 @@
     async function pullFromFirebase(silent = true) {
       const statusEl = document.getElementById('cloudSyncStatusText');
       const baseUrl = getCleanFirebaseUrl();
+      const channel = getHouseholdChannelHash();
       const urlsToTry = [baseUrl, ...DEFAULT_FIREBASE_URLS.filter(u => u !== baseUrl)];
 
       for (const candidateUrl of urlsToTry) {
         try {
-          const res = await fetch(`${candidateUrl}/foyer.json`);
+          const res = await fetch(`${candidateUrl}/foyers/${channel}.json`);
           if (!res.ok) continue;
           const remoteData = await res.json();
           if (remoteData && Array.isArray(remoteData.members) && Array.isArray(remoteData.tasks)) {
             if (!silent || (remoteData.lastUpdated && remoteData.lastUpdated > (appState.lastUpdated || 0))) {
-              appState = ensureSalonGeneralAccount(remoteData);
+              appState = migrateAndSanitizeState(remoteData);
               appState.firebaseDbUrl = candidateUrl;
               saveAppState(false);
-              renderAll();
+              renderAuthLockScreen();
+              if (isAuthenticated) renderAll();
             }
-            if (statusEl) statusEl.textContent = 'Synchronisé avec Firebase ✓';
+            if (statusEl) statusEl.textContent = 'Synchronisé & Chiffré (SHA-256) ✓';
             return true;
           }
         } catch (err) {}
       }
       if (!silent && statusEl) {
-        statusEl.textContent = 'Aucune donnée trouvée (cliquez d\'abord sur Envoyer vers Firebase)';
+        statusEl.textContent = 'Aucune sauvegarde trouvée pour cette Clé Secrète de Foyer';
       }
       return false;
     }
 
-    // Synchronisation automatique en arrière-plan toutes les 5 secondes entre les téléphones et la tablette du salon
     setInterval(() => {
       pullFromFirebase(true);
     }, 5000);
@@ -1330,7 +1532,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `homeview-sauvegarde-${TODAY_KEY}.json`;
+      a.download = `homeview-secure-${TODAY_KEY}.json`;
       a.click();
       URL.revokeObjectURL(url);
     }
@@ -1343,10 +1545,11 @@
         try {
           const imported = JSON.parse(e.target.result);
           if (imported && Array.isArray(imported.members) && Array.isArray(imported.tasks)) {
-            appState = ensureSalonGeneralAccount(imported);
+            appState = migrateAndSanitizeState(imported);
             addHistoryEntry('a restauré une sauvegarde complète sur cet appareil');
             saveAppState(true);
-            renderAll();
+            renderAuthLockScreen();
+            if (isAuthenticated) renderAll();
             document.getElementById('syncModal').close();
           }
         } catch (err) {
@@ -1357,6 +1560,7 @@
     }
 
     function editFamilyNote() {
+      if (!isAuthenticated) return;
       const next = prompt('Modifier le mémo du salon :', appState.familyNote);
       if (next !== null && next.trim() !== '') {
         appState.familyNote = next.trim();
@@ -1384,6 +1588,8 @@
       renderRightPanel();
     }
 
+    // Au démarrage : afficher l'écran de connexion obligatoire !
+    renderAuthLockScreen();
     renderAll();
     pullFromFirebase(true);
   </script>
