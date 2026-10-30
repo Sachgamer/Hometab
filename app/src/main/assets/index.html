@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0B0F19" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <title>HomeView — Calendrier & Comptes Foyer</title>
+  <title>HomeView — Tablette Salon & Comptes Foyer</title>
   <link rel="manifest" href="manifest.json" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -44,17 +44,6 @@
       box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
     }
 
-    .apple-tile {
-      background: rgba(30, 36, 52, 0.68);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      transition: transform 0.15s ease, background-color 0.2s ease, border-color 0.2s ease;
-    }
-
-    .apple-tile:active {
-      transform: scale(0.97);
-    }
-
     dialog {
       border: 1px solid rgba(255, 255, 255, 0.14);
       padding: 0;
@@ -89,44 +78,40 @@
 
   <!-- Mode Veille / Économiseur d'écran Tablette -->
   <div id="screensaverOverlay" onclick="toggleScreensaver(false)" class="fixed inset-0 z-50 bg-black/95 text-white hidden flex-col items-center justify-center cursor-pointer">
-    <div id="saverTime" class="text-8xl font-bold tracking-tight text-white/90">19:15</div>
+    <div id="saverTime" class="text-8xl font-bold tracking-tight text-white/90">19:35</div>
     <div id="saverDate" class="text-2xl text-white/50 mt-3 capitalize">Vendredi 30 Octobre</div>
     <div class="mt-8 flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/10 text-white/75 text-sm">
       <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-      <span id="saverTaskSummary">Calendrier Familial • Sauvegarde active</span>
+      <span id="saverTaskSummary">Tablette Salon • Vue Générale</span>
     </div>
     <p class="absolute bottom-8 text-xs text-white/30 tracking-widest uppercase">Touchez l'écran pour réveiller la tablette</p>
   </div>
 
-  <!-- HEADER : Comptes Connectés, Statut de Sauvegarde & Horloge -->
+  <!-- HEADER : Comptes Connectés, Firebase Sync & Horloge -->
   <header class="flex flex-wrap items-center justify-between gap-3">
     <div class="flex items-center gap-3.5">
-      <div class="w-12 h-12 rounded-2xl bg-blue-500/15 border border-blue-400/25 shadow-sm flex items-center justify-center">
-        <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-        </svg>
+      <div class="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-400/25 shadow-sm flex items-center justify-center">
+        <span class="text-2xl" id="headerModeIcon">🏡</span>
       </div>
       <div>
         <div class="flex items-center gap-2.5">
           <h1 class="text-2xl font-extrabold tracking-tight text-white">HomeView</h1>
           <span id="saveStatusBadge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/25 flex items-center gap-1.5">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Enregistré
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Firebase homeview-9a55c
           </span>
         </div>
         <p id="headerDateSub" class="text-xs font-medium text-slate-400 capitalize">Vendredi 30 Octobre</p>
       </div>
     </div>
 
-    <!-- Barre des Comptes Membres (Chacun a son compte + PIN) -->
+    <!-- Barre des Comptes : Compte Général Tablette Salon + Comptes Individuels avec PIN -->
     <div class="flex items-center gap-2 overflow-x-auto py-1" id="accountsHeaderBar"></div>
 
-    <!-- Actions Globales : Comptes, Sync Multi-Appareils, Veille, Horloge -->
+    <!-- Actions Globales -->
     <div class="flex items-center gap-2">
-      <button onclick="openSyncModal()" title="Synchroniser ou récupérer l'historique sur un nouvel appareil" class="apple-glass px-3.5 py-2.5 rounded-2xl text-xs font-bold text-blue-300 hover:text-white hover:bg-blue-600/20 border border-blue-500/20 transition flex items-center gap-2">
-        <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-        </svg>
-        <span>Sync Appareils</span>
+      <button onclick="openSyncModal()" title="Synchronisation Google Firebase (homeview-9a55c) & Appareils" class="apple-glass px-3.5 py-2.5 rounded-2xl text-xs font-bold text-amber-300 hover:text-white hover:bg-amber-500/20 border border-amber-500/25 transition flex items-center gap-2">
+        <span>🔥</span>
+        <span>Firebase Sync</span>
       </button>
 
       <button onclick="openMemberModal()" title="Gérer les comptes, emojis et codes PIN" class="apple-glass px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-200 hover:text-white hover:bg-white/10 transition flex items-center gap-1.5">
@@ -135,8 +120,8 @@
       </button>
 
       <div class="apple-glass px-3.5 py-2 rounded-2xl text-right">
-        <div id="liveClock" class="text-lg font-bold tracking-tight text-white leading-none">19:15</div>
-        <div id="activeUserLabel" class="text-xs font-semibold text-blue-400 mt-0.5">Session Foyer</div>
+        <div id="liveClock" class="text-lg font-bold tracking-tight text-white leading-none">19:35</div>
+        <div id="activeUserLabel" class="text-xs font-semibold text-emerald-400 mt-0.5">🏡 Tablette Salon</div>
       </div>
 
       <button onclick="toggleScreensaver(true)" title="Mode Veille" class="apple-glass p-2.5 rounded-2xl text-slate-300 hover:text-white transition">
@@ -150,7 +135,7 @@
   <!-- CONTENU PRINCIPAL : Grille Tablette 12 Colonnes -->
   <main class="grid grid-cols-1 lg:grid-cols-12 gap-5 flex-1">
 
-    <!-- COLONNE GAUCHE (5 cols) : CALENDRIER MENSUEL INTERACTIF & RÉSUMÉ -->
+    <!-- COLONNE GAUCHE (5 cols) : CALENDRIER MENSUEL INTERACTIF & COMPTE ACTIF -->
     <section class="lg:col-span-5 flex flex-col gap-5">
 
       <!-- Carte Calendrier Mensuel -->
@@ -173,42 +158,38 @@
           </div>
         </div>
 
-        <!-- En-têtes des jours (Lun -> Dim) -->
         <div class="grid grid-cols-7 gap-1 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">
           <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
         </div>
 
-        <!-- Grille des jours du mois -->
         <div id="calendarMonthGrid" class="grid grid-cols-7 gap-1.5"></div>
 
-        <!-- Légende des comptes / membres -->
         <div id="calendarMemberLegend" class="pt-3 border-t border-white/10 flex flex-wrap items-center gap-2 text-xs"></div>
       </div>
 
-      <!-- Carte Compte Actif & Mémo du Foyer -->
+      <!-- Carte Compte Actif (Tablette Salon vs Compte Personnel) & Mémo Foyer -->
       <div class="grid grid-cols-2 gap-4 flex-1">
-        <!-- Carte Session / Compte Actif -->
         <div class="apple-glass rounded-3xl p-4 flex flex-col justify-between">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/25 px-2.5 py-1 rounded-full">👤 Compte actif</span>
-            <button onclick="openSwitchAccountModal()" class="text-xs font-semibold text-blue-400 hover:underline">Changer</button>
+            <span id="accountBadgeType" class="text-xs font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/25 px-2.5 py-1 rounded-full">🏡 Vue Générale</span>
+            <button onclick="switchToSalonGeneral()" id="backToSalonBtn" class="hidden text-xs font-bold text-emerald-400 hover:underline">Salon</button>
           </div>
           <div id="currentAccountCardBody" class="my-2"></div>
           <button onclick="openSwitchAccountModal()" class="w-full py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white transition">
-            Changer de compte (PIN)
+            Connecter un compte (PIN)
           </button>
         </div>
 
         <!-- Mémo Foyer Persistant -->
         <div onclick="editFamilyNote()" class="apple-glass rounded-3xl p-4 flex flex-col justify-between cursor-pointer hover:border-white/20 transition">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-amber-300 bg-amber-500/15 border border-amber-500/25 px-2.5 py-1 rounded-full">📌 Mémo Foyer</span>
+            <span class="text-xs font-bold text-amber-300 bg-amber-500/15 border border-amber-500/25 px-2.5 py-1 rounded-full">📌 Mémo Salon</span>
             <span class="text-xs font-semibold text-blue-400">Modifier</span>
           </div>
           <p id="familyNoteText" class="text-xs font-semibold text-slate-200 line-clamp-4 my-2">
-            Penser à vérifier le planning de la semaine et valider vos tâches terminées !
+            Bienvenue sur la tablette du salon ! Tout le monde peut voir le planning général ou se connecter à son compte.
           </p>
-          <div class="text-xs text-slate-500">Sauvegardé automatiquement</div>
+          <div class="text-xs text-slate-500">Synchronisé sur tous les appareils</div>
         </div>
       </div>
 
@@ -217,18 +198,16 @@
     <!-- COLONNE DROITE (7 cols) : TÂCHES DU JOUR SÉLECTIONNÉ & HISTORIQUE COMPLET -->
     <section class="lg:col-span-7 apple-glass rounded-3xl p-5 md:p-6 flex flex-col justify-between">
       <div>
-        <!-- En-tête : Date sélectionnée + Onglets (Tâches du jour | Historique complet | Toutes les tâches) -->
         <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div>
             <div class="flex items-center gap-2.5">
               <h2 id="selectedDateTitle" class="text-xl font-extrabold text-white capitalize">Aujourd'hui</h2>
               <span id="taskCounterBadge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">0/0 faites</span>
             </div>
-            <p class="text-xs text-slate-400 mt-0.5">Toutes les modifications sont enregistrées dans l'historique permanent</p>
+            <p id="viewSubtitleInfo" class="text-xs text-slate-400 mt-0.5">Vue Générale Salon : affiche les tâches de tous les membres</p>
           </div>
 
           <div class="flex items-center gap-2">
-            <!-- Sélecteur de vue -->
             <div class="bg-slate-900/80 p-1 rounded-2xl border border-white/10 flex items-center text-xs font-bold">
               <button onclick="setRightPanelTab('day')" id="tabBtnDay" class="px-3 py-1.5 rounded-xl bg-blue-600 text-white transition">
                 📋 Jour
@@ -258,7 +237,7 @@
           <div id="dayProgressBar" class="bg-gradient-to-r from-blue-500 to-emerald-400 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
         </div>
 
-        <!-- VUE 1 & 2 : LISTE DES TÂCHES (Jour sélectionné ou Toutes les dates) -->
+        <!-- VUE 1 & 2 : LISTE DES TÂCHES -->
         <div id="tasksListContainer" class="space-y-2.5 max-h-[430px] overflow-y-auto pr-1"></div>
 
         <!-- VUE 3 : JOURNAL D'HISTORIQUE COMPLET -->
@@ -278,35 +257,34 @@
 
   </main>
 
-  <!-- DIALOG 1 : CONNEXION COMPTE PAR CODE PIN À CHIFFRES (PIN PAD TACTILE) -->
+  <!-- DIALOG 1 : CONNEXION COMPTE PAR CODE PIN À CHIFFRES -->
   <dialog id="pinModal">
     <div class="p-6 space-y-5 text-center">
       <div class="flex items-center justify-between">
-        <span class="text-xs font-bold uppercase tracking-wider text-blue-400">Connexion Compte</span>
+        <span class="text-xs font-bold uppercase tracking-wider text-blue-400">Connexion Compte Personnel</span>
         <button type="button" onclick="document.getElementById('pinModal').close()" class="p-1.5 rounded-full bg-white/10 text-slate-300 hover:text-white">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
 
-      <!-- Sélecteur de compte si non pré-sélectionné -->
+      <!-- Accès direct en 1 clic au Compte Général Tablette Salon (sans PIN) -->
+      <button type="button" onclick="switchToSalonGeneral();document.getElementById('pinModal').close();" class="w-full py-2.5 px-4 rounded-2xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center justify-center gap-2 transition">
+        <span>🏡</span>
+        <span>Basculer sur « Tablette Salon (Vue Générale) » sans code</span>
+      </button>
+
+      <!-- Sélecteur des comptes personnels -->
       <div id="pinAccountSelector" class="flex items-center justify-center gap-2 flex-wrap"></div>
 
       <div>
         <div id="pinTargetAvatar" class="text-4xl mb-1">👨</div>
         <h3 id="pinTargetName" class="text-lg font-extrabold text-white">Alex</h3>
-        <p id="pinHelperText" class="text-xs text-slate-400 mt-0.5">Entrez votre code PIN à 4 chiffres</p>
+        <p id="pinHelperText" class="text-xs text-slate-400 mt-0.5">Entrez votre code PIN à chiffres (par défaut : 1234)</p>
       </div>
 
-      <!-- Indicateurs des 4 chiffres -->
-      <div class="flex items-center justify-center gap-3.5 my-2" id="pinDotsRow">
-        <span class="w-4 h-4 rounded-full border-2 border-slate-500"></span>
-        <span class="w-4 h-4 rounded-full border-2 border-slate-500"></span>
-        <span class="w-4 h-4 rounded-full border-2 border-slate-500"></span>
-        <span class="w-4 h-4 rounded-full border-2 border-slate-500"></span>
-      </div>
+      <div class="flex items-center justify-center gap-3.5 my-2" id="pinDotsRow"></div>
       <div id="pinErrorMsg" class="text-xs font-bold text-rose-400 h-4"></div>
 
-      <!-- Pavé numérique tactile style iPadOS -->
       <div class="grid grid-cols-3 gap-3 max-w-[260px] mx-auto">
         <button type="button" onclick="pressPinDigit('1')" class="h-14 rounded-2xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-xl font-bold text-white border border-white/10 transition">1</button>
         <button type="button" onclick="pressPinDigit('2')" class="h-14 rounded-2xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-xl font-bold text-white border border-white/10 transition">2</button>
@@ -384,17 +362,15 @@
       <div class="flex items-center justify-between">
         <div>
           <h3 class="text-lg font-bold text-white">Comptes du Foyer & Codes PIN</h3>
-          <p class="text-xs text-slate-400">Chaque personne a son propre compte, emoji et mot de passe à 4 chiffres</p>
+          <p class="text-xs text-slate-400">Compte général Salon + Comptes personnels avec code PIN à chiffres</p>
         </div>
         <button type="button" onclick="document.getElementById('memberModal').close()" class="p-1.5 rounded-full bg-white/10 text-slate-300 hover:text-white">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
 
-      <!-- Liste des comptes avec édition Emoji + PIN -->
       <div id="membersManageList" class="space-y-2.5 max-h-60 overflow-y-auto pr-1"></div>
 
-      <!-- Panneau d'édition d'un compte (Emoji + Code PIN) -->
       <div id="emojiPickerPanel" class="hidden p-3.5 rounded-2xl bg-slate-800/90 border border-white/10 space-y-3">
         <div class="flex items-center justify-between">
           <span id="emojiPickerTargetLabel" class="text-xs font-bold text-blue-300">Personnaliser le compte</span>
@@ -418,7 +394,6 @@
         </button>
       </div>
 
-      <!-- Créer un nouveau compte avec PIN à chiffres -->
       <form id="addMemberForm" class="space-y-2.5 pt-3 border-t border-white/10">
         <div class="text-xs font-bold text-slate-300">Créer un nouveau compte membre</div>
         <div class="flex gap-2">
@@ -433,50 +408,51 @@
     </div>
   </dialog>
 
-  <!-- DIALOG 4 : SYNCHRONISATION MULTI-APPAREILS & RÉCUPÉRATION DE L'HISTORIQUE -->
+  <!-- DIALOG 4 : SYNCHRONISATION GOOGLE FIREBASE (homeview-9a55c) -->
   <dialog id="syncModal">
     <div class="p-6 space-y-4">
       <div class="flex items-center justify-between">
         <div>
-          <h3 class="text-lg font-bold text-white">Synchronisation & Nouvel Appareil</h3>
-          <p class="text-xs text-slate-400">Récupérez tous les comptes, codes PIN, tâches et l'historique sur n'importe quel appareil</p>
+          <h3 class="text-lg font-bold text-white">🔥 Google Firebase Sync (`homeview-9a55c`)</h3>
+          <p class="text-xs text-slate-400">Synchronisation temps réel entre la Tablette du Salon et tous les Téléphones</p>
         </div>
         <button type="button" onclick="document.getElementById('syncModal').close()" class="p-1.5 rounded-full bg-white/10 text-slate-300 hover:text-white">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
 
-      <!-- Synchronisation Cloud en direct (ID de Foyer) -->
-      <div class="p-4 rounded-2xl bg-slate-800/80 border border-white/10 space-y-3">
+      <!-- Configuration Firebase Realtime Database -->
+      <div class="p-4 rounded-2xl bg-slate-800/80 border border-amber-500/20 space-y-3">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-bold uppercase tracking-wider text-blue-400">☁️ Cloud Foyer (Multi-Appareils)</span>
-          <span id="cloudSyncStatusText" class="text-xs text-slate-400">Prêt</span>
+          <span class="text-xs font-bold uppercase tracking-wider text-amber-400">🔥 Projet Firebase : homeview-9a55c</span>
+          <span id="cloudSyncStatusText" class="text-xs text-emerald-400 font-semibold">Connecté</span>
         </div>
 
         <p class="text-xs text-slate-300 leading-relaxed">
-          Générez un <strong>Code Cloud Foyer</strong> sur cette tablette, ou entrez le code existant sur un nouvel appareil pour récupérer instantanément tout l'historique et les comptes.
+          URL Realtime Database de votre projet Google Firebase (pré-configurée sur <code>homeview-9a55c</code>) :
         </p>
 
+        <input id="firebaseUrlInput" type="url" placeholder="https://homeview-9a55c-default-rtdb.europe-west1.firebasedatabase.app" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-xs font-mono text-white outline-none" />
+
         <div class="flex gap-2">
-          <input id="cloudRoomIdInput" type="text" placeholder="Code Cloud Foyer (ou laissez vide pour créer)" class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-xs font-mono text-white outline-none" />
-          <button type="button" onclick="pushToCloudSync()" class="px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shrink-0">
-            Sauvegarder Cloud
+          <button type="button" onclick="pushToFirebase(false)" class="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold transition">
+            ⬆️ Envoyer vers Firebase
           </button>
-          <button type="button" onclick="pullFromCloudSync()" class="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shrink-0">
-            Récupérer
+          <button type="button" onclick="pullFromFirebase(false)" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition">
+            ⬇️ Récupérer l'historique Firebase
           </button>
         </div>
       </div>
 
-      <!-- Sauvegarde / Restauration par Fichier ou Code JSON (Fonctionne aussi hors-ligne) -->
-      <div class="p-4 rounded-2xl bg-slate-800/60 border border-white/10 space-y-3">
-        <div class="text-xs font-bold uppercase tracking-wider text-emerald-400">📦 Export / Import Complet (Fichier d'Historique)</div>
+      <!-- Export / Import Fichier JSON local de secours -->
+      <div class="p-4 rounded-2xl bg-slate-800/60 border border-white/10 space-y-2.5">
+        <div class="text-xs font-bold uppercase tracking-wider text-blue-400">📦 Sauvegarde Fichier (.json)</div>
         <div class="flex flex-wrap gap-2">
-          <button type="button" onclick="exportFullBackupFile()" class="flex-1 py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white transition">
-            ⬇️ Télécharger la sauvegarde (.json)
+          <button type="button" onclick="exportFullBackupFile()" class="flex-1 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white transition">
+            ⬇️ Exporter (.json)
           </button>
-          <label class="flex-1 py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white text-center cursor-pointer transition">
-            ⬆️ Importer une sauvegarde (.json)
+          <label class="flex-1 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white text-center cursor-pointer transition">
+            ⬆️ Importer (.json)
             <input type="file" accept=".json" onchange="importFullBackupFile(event)" class="hidden" />
           </label>
         </div>
@@ -485,22 +461,27 @@
   </dialog>
 
   <script>
-    // --- CONSTANTES & ÉTAT GLOBAL PERSISTANT ---
-    const STORAGE_KEY = 'homeview_full_database_v2';
+    const STORAGE_KEY = 'homeview_full_database_v3';
+
+    // URLs candidates pour le projet Firebase homeview-9a55c (Europe ou US)
+    const DEFAULT_FIREBASE_URLS = [
+      'https://homeview-9a55c-default-rtdb.europe-west1.firebasedatabase.app',
+      'https://homeview-9a55c-default-rtdb.firebaseio.com'
+    ];
 
     const EMOJI_CHOICES = [
-      '👨', '👩', '👦', '👧', '🧑', '👶', '🧔', '👱‍♀️',
-      '🦸‍♂️', '🦸‍♀️', '🧙‍♂️', '🧚‍♀️', '🧑‍🍳', '🧑‍💻', '🧑‍🎨', '🧑‍🚀',
+      '🏡', '👨', '👩', '👦', '👧', '🧑', '👶', '🧔',
+      '👱‍♀️', '🦸‍♂️', '🦸‍♀️', '🧙‍♂️', '🧚‍♀️', '🧑‍🍳', '🧑‍💻', '🧑‍🎨',
       '😎', '🤓', '🤠', '🥳', '🦊', '🐱', '🐶', '🐼',
-      '🦁', '🐯', '🐨', '🐸', '🦄', '🐝', '⚡', '🏡'
+      '🦁', '🐯', '🐨', '🐸', '🦄', '🐝', '⚡', '🌟'
     ];
 
     const COLOR_PALETTE = [
+      { badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30', dot: 'bg-emerald-400' },
       { badge: 'bg-blue-500/20 text-blue-300 border-blue-500/30', dot: 'bg-blue-400' },
       { badge: 'bg-rose-500/20 text-rose-300 border-rose-500/30', dot: 'bg-rose-400' },
       { badge: 'bg-amber-500/20 text-amber-300 border-amber-500/30', dot: 'bg-amber-400' },
-      { badge: 'bg-purple-500/20 text-purple-300 border-purple-500/30', dot: 'bg-purple-400' },
-      { badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30', dot: 'bg-emerald-400' }
+      { badge: 'bg-purple-500/20 text-purple-300 border-purple-500/30', dot: 'bg-purple-400' }
     ];
 
     function formatDateKey(dateObj) {
@@ -513,39 +494,59 @@
     const TODAY_KEY = formatDateKey(new Date());
 
     const DEFAULT_STATE = {
-      cloudSyncId: '',
-      activeAccountId: 'alex',
-      familyNote: 'Penser à vérifier le planning de la semaine et valider vos tâches terminées !',
+      firebaseDbUrl: DEFAULT_FIREBASE_URLS[0],
+      lastUpdated: Date.now(),
+      activeAccountId: 'salon', // Par défaut sur la tablette : Compte Général Tablette Salon
+      familyNote: 'Bienvenue sur la tablette du salon ! Tout le monde peut voir le planning général ou se connecter à son compte.',
       members: [
-        { id: 'alex', name: 'Alex', emoji: '👨', pin: '1234', color: COLOR_PALETTE[0].badge, dot: COLOR_PALETTE[0].dot, connected: true },
-        { id: 'sarah', name: 'Sarah', emoji: '👩', pin: '1234', color: COLOR_PALETTE[1].badge, dot: COLOR_PALETTE[1].dot, connected: true },
-        { id: 'leo', name: 'Léo', emoji: '👦', pin: '1234', color: COLOR_PALETTE[2].badge, dot: COLOR_PALETTE[2].dot, connected: true },
-        { id: 'emma', name: 'Emma', emoji: '👧', pin: '1234', color: COLOR_PALETTE[3].badge, dot: COLOR_PALETTE[3].dot, connected: true }
+        { id: 'salon', name: 'Tablette Salon', emoji: '🏡', pin: '0000', isGeneral: true, color: COLOR_PALETTE[0].badge, dot: COLOR_PALETTE[0].dot, connected: true },
+        { id: 'alex', name: 'Alex', emoji: '👨', pin: '1234', isGeneral: false, color: COLOR_PALETTE[1].badge, dot: COLOR_PALETTE[1].dot, connected: true },
+        { id: 'sarah', name: 'Sarah', emoji: '👩', pin: '1234', isGeneral: false, color: COLOR_PALETTE[2].badge, dot: COLOR_PALETTE[2].dot, connected: true },
+        { id: 'leo', name: 'Léo', emoji: '👦', pin: '1234', isGeneral: false, color: COLOR_PALETTE[3].badge, dot: COLOR_PALETTE[3].dot, connected: true },
+        { id: 'emma', name: 'Emma', emoji: '👧', pin: '1234', isGeneral: false, color: COLOR_PALETTE[4].badge, dot: COLOR_PALETTE[4].dot, connected: true }
       ],
       tasks: [
-        { id: 101, title: 'Vider le lave-vaisselle du matin', date: TODAY_KEY, time: '08:15', category: '🏠 Maison', memberId: 'alex', createdBy: 'alex', done: true, completedAt: '08:20' },
+        { id: 101, title: 'Vider le lave-vaisselle du matin', date: TODAY_KEY, time: '08:15', category: '🏠 Maison', memberId: 'alex', createdBy: 'salon', done: true, completedAt: '08:20' },
         { id: 102, title: 'Devoirs de mathématiques & lecture', date: TODAY_KEY, time: '17:30', category: '🎒 École', memberId: 'leo', createdBy: 'sarah', done: false, completedAt: null },
-        { id: 103, title: 'Préparer le dîner', date: TODAY_KEY, time: '19:00', category: '🍽️ Repas', memberId: 'sarah', createdBy: 'sarah', done: false, completedAt: null },
-        { id: 104, title: 'Mettre la table de la salle à manger', date: TODAY_KEY, time: '19:30', category: '🍽️ Repas', memberId: 'emma', createdBy: 'alex', done: false, completedAt: null },
+        { id: 103, title: 'Préparer le dîner en famille', date: TODAY_KEY, time: '19:00', category: '🍽️ Repas', memberId: 'sarah', createdBy: 'sarah', done: false, completedAt: null },
+        { id: 104, title: 'Mettre la table du salon', date: TODAY_KEY, time: '19:30', category: '🍽️ Repas', memberId: 'emma', createdBy: 'salon', done: false, completedAt: null },
         { id: 105, title: 'Sortir le bac de recyclage', date: TODAY_KEY, time: '20:30', category: '🏠 Maison', memberId: 'alex', createdBy: 'alex', done: false, completedAt: null }
       ],
       history: [
-        { id: 1, timestamp: new Date().toISOString(), actorId: 'alex', action: 'a terminé la tâche « Vider le lave-vaisselle du matin »', dateKey: TODAY_KEY }
+        { id: 1, timestamp: new Date().toISOString(), actorId: 'salon', action: 'Mode Vue Générale activé sur la Tablette du Salon', dateKey: TODAY_KEY }
       ]
     };
 
-    // Chargement depuis le stockage natif Android (si dans l'APK) ou localStorage
+    function ensureSalonGeneralAccount(state) {
+      if (!state.members.some(m => m.id === 'salon' || m.isGeneral)) {
+        state.members.unshift({
+          id: 'salon',
+          name: 'Tablette Salon',
+          emoji: '🏡',
+          pin: '0000',
+          isGeneral: true,
+          color: COLOR_PALETTE[0].badge,
+          dot: COLOR_PALETTE[0].dot,
+          connected: true
+        });
+      }
+      if (!state.firebaseDbUrl) {
+        state.firebaseDbUrl = DEFAULT_FIREBASE_URLS[0];
+      }
+      return state;
+    }
+
     function loadAppState() {
       try {
         if (window.AndroidHomeView && typeof window.AndroidHomeView.loadDatabase === 'function') {
           const nativeJson = window.AndroidHomeView.loadDatabase();
           if (nativeJson && nativeJson.trim().length > 2) {
-            return JSON.parse(nativeJson);
+            return ensureSalonGeneralAccount(JSON.parse(nativeJson));
           }
         }
         const localJson = localStorage.getItem(STORAGE_KEY);
         if (localJson) {
-          return JSON.parse(localJson);
+          return ensureSalonGeneralAccount(JSON.parse(localJson));
         }
       } catch (e) {
         console.error('Erreur chargement base:', e);
@@ -554,37 +555,59 @@
     }
 
     let appState = loadAppState();
+    // Compte actif propre à cet appareil (Tablette Salon par défaut sur la tablette, ou compte personnel sur téléphone)
+    let localActiveAccountId = localStorage.getItem('hv_device_account_id') || appState.activeAccountId || 'salon';
     let selectedDateKey = TODAY_KEY;
     let displayedMonthDate = new Date();
     let selectedMemberFilter = 'all';
-    let rightPanelTab = 'day'; // 'day' | 'all' | 'history'
-    let selectedModalAssignee = appState.activeAccountId || 'alex';
+    let rightPanelTab = 'day';
+    let selectedModalAssignee = 'alex';
     let editingMemberId = null;
 
-    // État du clavier PIN
     let pinTargetMemberId = null;
     let enteredPin = '';
 
-    function saveAppState(pushCloudQuietly = true) {
+    function getActiveAccount() {
+      return appState.members.find(m => m.id === localActiveAccountId) || appState.members[0];
+    }
+
+    function setLocalActiveAccount(accountId) {
+      localActiveAccountId = accountId;
+      appState.activeAccountId = accountId;
+      localStorage.setItem('hv_device_account_id', accountId);
+      const acc = getActiveAccount();
+      // Si c'est le Compte Général Tablette Salon, on affiche automatiquement TOUT le foyer !
+      // Si c'est un compte personnel (ex: téléphone d'Alex), on filtre sur ses tâches par défaut (tout en pouvant cliquer sur "Tous")
+      if (acc.isGeneral || acc.id === 'salon') {
+        selectedMemberFilter = 'all';
+      } else {
+        selectedMemberFilter = acc.id;
+      }
+    }
+
+    function switchToSalonGeneral() {
+      setLocalActiveAccount('salon');
+      renderAll();
+    }
+
+    function saveAppState(syncRemote = true) {
+      appState.lastUpdated = Date.now();
       const serialized = JSON.stringify(appState);
       try {
         localStorage.setItem(STORAGE_KEY, serialized);
       } catch (e) {}
 
-      // Sauvegarde sur disque interne Android (si exécuté dans l'APK)
       if (window.AndroidHomeView && typeof window.AndroidHomeView.saveDatabase === 'function') {
         window.AndroidHomeView.saveDatabase(serialized);
       }
 
-      // Indicateur visuel de sauvegarde
       const badge = document.getElementById('saveStatusBadge');
       if (badge) {
         badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Enregistré (${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })})`;
       }
 
-      // Si un Code Cloud Foyer est configuré, synchronise en arrière-plan
-      if (pushCloudQuietly && appState.cloudSyncId) {
-        syncToCloudEndpoint(true);
+      if (syncRemote) {
+        pushToFirebase(true);
       }
     }
 
@@ -592,17 +615,13 @@
       appState.history.unshift({
         id: Date.now() + Math.random(),
         timestamp: new Date().toISOString(),
-        actorId: appState.activeAccountId,
+        actorId: localActiveAccountId,
         action: actionText,
         dateKey
       });
-      if (appState.history.length > 250) {
-        appState.history = appState.history.slice(0, 250);
+      if (appState.history.length > 300) {
+        appState.history = appState.history.slice(0, 300);
       }
-    }
-
-    function getActiveAccount() {
-      return appState.members.find(m => m.id === appState.activeAccountId) || appState.members[0];
     }
 
     // --- HORLOGE TEMPS RÉEL ---
@@ -618,53 +637,86 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // --- BARRE DES COMPTES EN HAUT & CARTE COMPTE ACTIF ---
+    // --- BARRE DES COMPTES (AVEC COMPTE GÉNÉRAL TABLETTE SALON) ---
     function renderAccountsHeader() {
       const bar = document.getElementById('accountsHeaderBar');
       const active = getActiveAccount();
 
       document.getElementById('activeUserLabel').textContent = `${active.emoji} ${active.name}`;
+      document.getElementById('headerModeIcon').textContent = active.emoji;
 
       bar.innerHTML = appState.members.map(m => {
         const isCurrent = m.id === active.id;
+        const isSalon = m.id === 'salon' || m.isGeneral;
         return `
-          <button onclick="promptPinForAccount('${m.id}')" class="px-3.5 py-2 rounded-2xl text-xs font-bold transition flex items-center gap-2 shrink-0 border ${
+          <button onclick="${isSalon ? "switchToSalonGeneral()" : `promptPinForAccount('${m.id}')`}" class="px-3.5 py-2 rounded-2xl text-xs font-bold transition flex items-center gap-2 shrink-0 border ${
             isCurrent
-              ? 'bg-blue-600 text-white border-blue-400 shadow-lg shadow-blue-600/25'
+              ? (isSalon ? 'bg-emerald-600 text-white border-emerald-400 shadow-lg shadow-emerald-600/25' : 'bg-blue-600 text-white border-blue-400 shadow-lg shadow-blue-600/25')
               : 'apple-glass text-slate-200 border-white/10 hover:bg-white/10'
           }">
             <span class="text-base">${m.emoji}</span>
             <span>${m.name}</span>
-            <span class="w-2 h-2 rounded-full ${isCurrent ? 'bg-emerald-300' : 'bg-emerald-500/60'}" title="Compte connecté au foyer"></span>
+            ${isSalon ? '<span class="text-[10px] px-1.5 py-0.5 rounded-md bg-black/25 uppercase">Général</span>' : '<span class="w-2 h-2 rounded-full bg-emerald-400"></span>'}
           </button>
         `;
       }).join('');
 
-      // Carte Compte Actif à gauche
       const cardBody = document.getElementById('currentAccountCardBody');
-      const myRemaining = appState.tasks.filter(t => t.memberId === active.id && !t.done).length;
-      cardBody.innerHTML = `
-        <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-2xl bg-slate-800 border border-white/10 flex items-center justify-center text-2xl">
-            ${active.emoji}
-          </div>
-          <div>
-            <div class="text-base font-extrabold text-white">${active.name}</div>
-            <div class="text-xs text-slate-400">${myRemaining} tâche(s) à faire</div>
-          </div>
-        </div>
-      `;
+      const badgeType = document.getElementById('accountBadgeType');
+      const backBtn = document.getElementById('backToSalonBtn');
+      const subtitleInfo = document.getElementById('viewSubtitleInfo');
 
-      // Mémo
+      if (active.isGeneral || active.id === 'salon') {
+        badgeType.textContent = '🏡 Vue Générale Salon';
+        badgeType.className = 'text-xs font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/25 px-2.5 py-1 rounded-full';
+        backBtn.classList.add('hidden');
+        subtitleInfo.textContent = 'Mode Tablette Salon : vue globale de tous les membres et de tout le calendrier';
+        const totalPending = appState.tasks.filter(t => !t.done).length;
+        cardBody.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-2xl">
+              🏡
+            </div>
+            <div>
+              <div class="text-base font-extrabold text-white">Tablette Salon</div>
+              <div class="text-xs text-slate-400">${totalPending} tâche(s) au total dans le foyer</div>
+            </div>
+          </div>
+        `;
+      } else {
+        badgeType.textContent = '👤 Compte Personnel';
+        badgeType.className = 'text-xs font-bold text-blue-300 bg-blue-500/15 border border-blue-500/25 px-2.5 py-1 rounded-full';
+        backBtn.classList.remove('hidden');
+        subtitleInfo.textContent = `Connecté sur le compte de ${active.emoji} ${active.name} (cliquez sur « Tablette Salon » en haut pour revenir à la vue générale)`;
+        const myRemaining = appState.tasks.filter(t => t.memberId === active.id && !t.done).length;
+        cardBody.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-2xl bg-slate-800 border border-white/10 flex items-center justify-center text-2xl">
+              ${active.emoji}
+            </div>
+            <div>
+              <div class="text-base font-extrabold text-white">${active.name}</div>
+              <div class="text-xs text-slate-400">${myRemaining} tâche(s) personnelle(s)</div>
+            </div>
+          </div>
+        `;
+      }
+
       document.getElementById('familyNoteText').textContent = appState.familyNote;
     }
 
-    // --- PAVÉ NUMÉRIQUE CODE PIN (CONNEXION COMPTE) ---
+    // --- PAVÉ NUMÉRIQUE CODE PIN ---
     function openSwitchAccountModal() {
-      promptPinForAccount(appState.members[0]?.id);
+      const firstPersonal = appState.members.find(m => !m.isGeneral && m.id !== 'salon') || appState.members[0];
+      promptPinForAccount(firstPersonal.id);
     }
 
     function promptPinForAccount(memberId) {
+      const target = appState.members.find(m => m.id === memberId);
+      if (target && (target.isGeneral || target.id === 'salon')) {
+        switchToSalonGeneral();
+        return;
+      }
       pinTargetMemberId = memberId;
       enteredPin = '';
       renderPinModalAccountSelector();
@@ -675,7 +727,8 @@
 
     function renderPinModalAccountSelector() {
       const sel = document.getElementById('pinAccountSelector');
-      sel.innerHTML = appState.members.map(m => {
+      const personalMembers = appState.members.filter(m => !m.isGeneral && m.id !== 'salon');
+      sel.innerHTML = personalMembers.map(m => {
         const active = m.id === pinTargetMemberId;
         return `
           <button type="button" onclick="pinTargetMemberId='${m.id}';enteredPin='';renderPinModalAccountSelector();updatePinModalUI();" class="px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition ${
@@ -716,9 +769,9 @@
 
         if (enteredPin.length === expectedPin.length) {
           if (enteredPin === expectedPin) {
-            appState.activeAccountId = target.id;
+            setLocalActiveAccount(target.id);
             target.connected = true;
-            addHistoryEntry(`s'est connecté(e) à son compte`);
+            addHistoryEntry(`s'est connecté(e) à son compte personnel`);
             saveAppState();
             renderAll();
             document.getElementById('pinModal').close();
@@ -772,15 +825,12 @@
 
       const firstDayOfMonth = new Date(year, month, 1);
       const lastDayOfMonth = new Date(year, month + 1, 0);
-
-      // Lundi = 0 ... Dimanche = 6
       const startWeekday = (firstDayOfMonth.getDay() + 6) % 7;
       const daysInMonth = lastDayOfMonth.getDate();
 
       const grid = document.getElementById('calendarMonthGrid');
       let html = '';
 
-      // Cases vides avant le 1er du mois
       for (let i = 0; i < startWeekday; i++) {
         html += `<div class="h-12 rounded-2xl bg-slate-900/25 border border-transparent"></div>`;
       }
@@ -794,7 +844,6 @@
         const dayTasks = appState.tasks.filter(t => t.date === dKey);
         const pendingTasks = dayTasks.filter(t => !t.done);
 
-        // Pastilles couleurs des membres ayant une tâche ce jour
         const dotsHtml = dayTasks.slice(0, 4).map(t => {
           const m = appState.members.find(mem => mem.id === t.memberId);
           const dotClass = m?.dot || 'bg-blue-400';
@@ -818,7 +867,6 @@
 
       grid.innerHTML = html;
 
-      // Légende des membres sous le calendrier
       document.getElementById('calendarMemberLegend').innerHTML = appState.members.map(m => `
         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/5 text-slate-300">
           <span class="w-2 h-2 rounded-full ${m.dot || 'bg-blue-400'}"></span>
@@ -839,21 +887,19 @@
     }
 
     function renderRightPanel() {
-      // Style des boutons d'onglets
       document.getElementById('tabBtnDay').className = `px-3 py-1.5 rounded-xl transition ${rightPanelTab === 'day' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`;
       document.getElementById('tabBtnAll').className = `px-3 py-1.5 rounded-xl transition ${rightPanelTab === 'all' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`;
       document.getElementById('tabBtnHistory').className = `px-3 py-1.5 rounded-xl transition ${rightPanelTab === 'history' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`;
 
-      // Filtre membres
       const pills = document.getElementById('memberFilterPills');
       let pillsHtml = `
         <button onclick="setMemberFilter('all')" class="px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition ${
-          selectedMemberFilter === 'all' ? 'bg-white text-slate-950' : 'bg-white/5 text-slate-300 hover:bg-white/10'
+          selectedMemberFilter === 'all' ? 'bg-emerald-500 text-slate-950 shadow-sm' : 'bg-white/5 text-slate-300 hover:bg-white/10'
         }">
-          👨‍👩‍👧‍👦 Tous les comptes
+          🏡 Vue Générale (Tout voir)
         </button>
       `;
-      appState.members.forEach(m => {
+      appState.members.filter(m => !m.isGeneral && m.id !== 'salon').forEach(m => {
         const active = selectedMemberFilter === m.id;
         pillsHtml += `
           <button onclick="setMemberFilter('${m.id}')" class="px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition flex items-center gap-1.5 ${
@@ -869,7 +915,6 @@
       const historyBox = document.getElementById('historyListContainer');
       const progressWrap = document.getElementById('dayProgressWrapper');
 
-      // Titre de la date sélectionnée
       const [y, m, d] = selectedDateKey.split('-').map(Number);
       const selDateObj = new Date(y, m - 1, d);
       const niceDate = selDateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -886,7 +931,7 @@
           historyBox.innerHTML = `<div class="text-center py-10 text-xs text-slate-400">Aucun événement enregistré pour ce filtre.</div>`;
         } else {
           historyBox.innerHTML = filteredHistory.map(item => {
-            const actor = appState.members.find(mem => mem.id === item.actorId) || { emoji: '🏡', name: 'Foyer' };
+            const actor = appState.members.find(mem => mem.id === item.actorId) || { emoji: '🏡', name: 'Tablette Salon' };
             const dt = new Date(item.timestamp);
             const dtStr = dt.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) + ' à ' + dt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
             return `
@@ -920,7 +965,7 @@
         : appState.tasks.filter(t => t.date === selectedDateKey);
 
       const filtered = baseTasks
-        .filter(t => selectedMemberFilter === 'all' || t.memberId === selectedMemberFilter)
+        .filter(t => selectedMemberFilter === 'all' || t.memberId === selectedMemberFilter || t.memberId === 'salon')
         .sort((a, b) => Number(a.done) - Number(b.done) || a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
 
       const doneCount = filtered.filter(t => t.done).length;
@@ -929,7 +974,7 @@
 
       document.getElementById('taskCounterBadge').textContent = `${doneCount}/${totalCount} faites`;
       document.getElementById('dayProgressBar').style.width = `${pct}%`;
-      document.getElementById('saverTaskSummary').textContent = `Calendrier • ${doneCount}/${totalCount} tâches accomplies`;
+      document.getElementById('saverTaskSummary').textContent = `Tablette Salon • ${doneCount}/${totalCount} tâches accomplies`;
 
       if (filtered.length === 0) {
         tasksBox.innerHTML = `
@@ -984,7 +1029,6 @@
         }).join('');
       }
 
-      // Résumé par personne en bas
       document.getElementById('memberSummaryRow').innerHTML = appState.members.map(m => {
         const rem = appState.tasks.filter(t => t.date === selectedDateKey && t.memberId === m.id && !t.done).length;
         return `
@@ -1023,9 +1067,12 @@
       renderAll();
     }
 
-    // --- MODALE AJOUT DE TÂCHE DANS LE CALENDRIER ---
+    // --- MODALE AJOUT DE TÂCHE ---
     function openTaskModal() {
-      selectedModalAssignee = selectedMemberFilter !== 'all' ? selectedMemberFilter : getActiveAccount().id;
+      const active = getActiveAccount();
+      selectedModalAssignee = (selectedMemberFilter !== 'all')
+        ? selectedMemberFilter
+        : (!active.isGeneral ? active.id : (appState.members[1]?.id || 'salon'));
       document.getElementById('inputTaskDate').value = selectedDateKey;
       renderModalAssigneePicker();
       document.getElementById('taskModal').showModal();
@@ -1063,7 +1110,7 @@
         time,
         category,
         memberId: selectedModalAssignee,
-        createdBy: appState.activeAccountId,
+        createdBy: localActiveAccountId,
         done: false,
         completedAt: null
       });
@@ -1089,34 +1136,37 @@
 
     function renderMembersManageList() {
       const list = document.getElementById('membersManageList');
-      list.innerHTML = appState.members.map(m => `
-        <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-800/80 border border-white/10">
-          <div class="flex items-center gap-3">
-            <button type="button" onclick="openEmojiPickerForMember('${m.id}')" class="w-11 h-11 rounded-xl bg-slate-700 hover:bg-blue-600/30 border border-white/15 flex items-center justify-center text-xl transition">
-              ${m.emoji}
-            </button>
-            <div>
-              <div class="text-sm font-bold text-white flex items-center gap-2">
-                <span>${m.name}</span>
-                <span class="text-[11px] font-mono px-2 py-0.5 rounded-md bg-white/5 text-slate-400">PIN: ••••</span>
-              </div>
-              <button type="button" onclick="openEmojiPickerForMember('${m.id}')" class="text-xs text-blue-400 hover:underline">
-                Modifier l'emoji ou le code PIN
+      list.innerHTML = appState.members.map(m => {
+        const isSalon = m.id === 'salon' || m.isGeneral;
+        return `
+          <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-800/80 border border-white/10">
+            <div class="flex items-center gap-3">
+              <button type="button" onclick="openEmojiPickerForMember('${m.id}')" class="w-11 h-11 rounded-xl bg-slate-700 hover:bg-blue-600/30 border border-white/15 flex items-center justify-center text-xl transition">
+                ${m.emoji}
               </button>
+              <div>
+                <div class="text-sm font-bold text-white flex items-center gap-2">
+                  <span>${m.name}</span>
+                  <span class="text-[11px] font-mono px-2 py-0.5 rounded-md bg-white/5 text-slate-400">${isSalon ? 'Compte Général Salon' : 'PIN: ••••'}</span>
+                </div>
+                <button type="button" onclick="openEmojiPickerForMember('${m.id}')" class="text-xs text-blue-400 hover:underline">
+                  Modifier l'emoji ${isSalon ? '' : 'ou le code PIN'}
+                </button>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="document.getElementById('memberModal').close();${isSalon ? 'switchToSalonGeneral()' : `promptPinForAccount('${m.id}')`};" class="text-xs font-bold px-2.5 py-1.5 rounded-xl bg-blue-600/20 text-blue-300 hover:bg-blue-600/30">
+                Activer
+              </button>
+              ${!isSalon && appState.members.length > 2 ? `
+                <button type="button" onclick="removeMember('${m.id}')" class="text-xs font-semibold text-rose-400 hover:text-rose-300 px-2 py-1">
+                  Retirer
+                </button>
+              ` : ''}
             </div>
           </div>
-          <div class="flex items-center gap-2">
-            <button type="button" onclick="document.getElementById('memberModal').close();promptPinForAccount('${m.id}');" class="text-xs font-bold px-2.5 py-1.5 rounded-xl bg-blue-600/20 text-blue-300 hover:bg-blue-600/30">
-              Connecter
-            </button>
-            ${appState.members.length > 1 ? `
-              <button type="button" onclick="removeMember('${m.id}')" class="text-xs font-semibold text-rose-400 hover:text-rose-300 px-2 py-1">
-                Retirer
-              </button>
-            ` : ''}
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function openEmojiPickerForMember(memberId) {
@@ -1124,7 +1174,7 @@
       const member = appState.members.find(m => m.id === memberId);
       if (!member) return;
 
-      document.getElementById('emojiPickerTargetLabel').textContent = `Compte de ${member.name} (${member.emoji})`;
+      document.getElementById('emojiPickerTargetLabel').textContent = `Compte : ${member.name} (${member.emoji})`;
       document.getElementById('customEmojiInput').value = member.emoji;
       document.getElementById('customPinInput').value = member.pin || '1234';
 
@@ -1154,7 +1204,7 @@
       if (newEmoji) member.emoji = newEmoji;
       if (newPin.length >= 4) member.pin = newPin;
 
-      addHistoryEntry(`a mis à jour le profil/PIN de ${member.name}`);
+      addHistoryEntry(`a personnalisé le compte de ${member.name}`);
       saveAppState();
       renderMembersManageList();
       openEmojiPickerForMember(editingMemberId);
@@ -1162,10 +1212,11 @@
     }
 
     function removeMember(id) {
+      if (id === 'salon') return;
       const target = appState.members.find(m => m.id === id);
       appState.members = appState.members.filter(m => m.id !== id);
-      if (appState.activeAccountId === id) {
-        appState.activeAccountId = appState.members[0]?.id || '';
+      if (localActiveAccountId === id) {
+        setLocalActiveAccount('salon');
       }
       if (selectedMemberFilter === id) selectedMemberFilter = 'all';
       if (target) addHistoryEntry(`a supprimé le compte ${target.name}`);
@@ -1189,6 +1240,7 @@
         name,
         emoji,
         pin,
+        isGeneral: false,
         color: palette.badge,
         dot: palette.dot,
         connected: true
@@ -1202,74 +1254,76 @@
       renderAll();
     });
 
-    // --- SYNCHRONISATION MULTI-APPAREILS & RÉCUPÉRATION D'HISTORIQUE ---
+    // --- SYNCHRONISATION GOOGLE FIREBASE TEMPS RÉEL (PROJET homeview-9a55c) ---
     function openSyncModal() {
-      document.getElementById('cloudRoomIdInput').value = appState.cloudSyncId || '';
+      document.getElementById('firebaseUrlInput').value = appState.firebaseDbUrl || DEFAULT_FIREBASE_URLS[0];
       document.getElementById('syncModal').showModal();
     }
 
-    async function syncToCloudEndpoint(silent = false) {
-      const statusEl = document.getElementById('cloudSyncStatusText');
-      try {
-        if (!silent && statusEl) statusEl.textContent = 'Synchronisation en cours...';
-        const inputVal = document.getElementById('cloudRoomIdInput')?.value.trim();
-        if (inputVal) appState.cloudSyncId = inputVal;
+    function getCleanFirebaseUrl() {
+      const inputEl = document.getElementById('firebaseUrlInput');
+      const raw = (inputEl && inputEl.value.trim()) ? inputEl.value.trim() : (appState.firebaseDbUrl || DEFAULT_FIREBASE_URLS[0]);
+      return raw.replace(/\/+$/, '');
+    }
 
-        if (!appState.cloudSyncId) {
-          // Crée un nouveau conteneur Cloud JSON
-          const res = await fetch('https://jsonblob.com/api/jsonBlob', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify(appState)
-          });
-          const loc = res.headers.get('Location') || res.headers.get('location') || '';
-          const blobId = loc.split('/').pop();
-          if (blobId) {
-            appState.cloudSyncId = blobId;
-            document.getElementById('cloudRoomIdInput').value = blobId;
-            saveAppState(false);
-            if (statusEl) statusEl.textContent = `Code créé : ${blobId}`;
-          }
-        } else {
-          await fetch(`https://jsonblob.com/api/jsonBlob/${appState.cloudSyncId}`, {
+    async function pushToFirebase(silent = true) {
+      const statusEl = document.getElementById('cloudSyncStatusText');
+      const baseUrl = getCleanFirebaseUrl();
+      appState.firebaseDbUrl = baseUrl;
+
+      const urlsToTry = [baseUrl, ...DEFAULT_FIREBASE_URLS.filter(u => u !== baseUrl)];
+      for (const candidateUrl of urlsToTry) {
+        try {
+          const res = await fetch(`${candidateUrl}/foyer.json`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(appState)
           });
-          if (statusEl) statusEl.textContent = 'Synchronisé dans le Cloud ✓';
-        }
-      } catch (err) {
-        if (!silent && statusEl) statusEl.textContent = 'Mode local actif (utilisez Export/Import JSON)';
+          if (res.ok) {
+            appState.firebaseDbUrl = candidateUrl;
+            if (statusEl) statusEl.textContent = 'Synchronisé avec Firebase ✓';
+            return true;
+          }
+        } catch (err) {}
       }
+      if (!silent && statusEl) {
+        statusEl.textContent = 'Vérifiez que Realtime Database est activé en mode test dans Firebase';
+      }
+      return false;
     }
 
-    function pushToCloudSync() {
-      syncToCloudEndpoint(false);
-    }
-
-    async function pullFromCloudSync() {
-      const code = document.getElementById('cloudRoomIdInput').value.trim();
+    async function pullFromFirebase(silent = true) {
       const statusEl = document.getElementById('cloudSyncStatusText');
-      if (!code) {
-        statusEl.textContent = 'Entrez un Code Cloud Foyer à récupérer';
-        return;
+      const baseUrl = getCleanFirebaseUrl();
+      const urlsToTry = [baseUrl, ...DEFAULT_FIREBASE_URLS.filter(u => u !== baseUrl)];
+
+      for (const candidateUrl of urlsToTry) {
+        try {
+          const res = await fetch(`${candidateUrl}/foyer.json`);
+          if (!res.ok) continue;
+          const remoteData = await res.json();
+          if (remoteData && Array.isArray(remoteData.members) && Array.isArray(remoteData.tasks)) {
+            if (!silent || (remoteData.lastUpdated && remoteData.lastUpdated > (appState.lastUpdated || 0))) {
+              appState = ensureSalonGeneralAccount(remoteData);
+              appState.firebaseDbUrl = candidateUrl;
+              saveAppState(false);
+              renderAll();
+            }
+            if (statusEl) statusEl.textContent = 'Synchronisé avec Firebase ✓';
+            return true;
+          }
+        } catch (err) {}
       }
-      try {
-        statusEl.textContent = 'Récupération de l\'historique...';
-        const res = await fetch(`https://jsonblob.com/api/jsonBlob/${code}`);
-        if (!res.ok) throw new Error('Code introuvable');
-        const remoteData = await res.json();
-        if (remoteData && Array.isArray(remoteData.members) && Array.isArray(remoteData.tasks)) {
-          appState = remoteData;
-          appState.cloudSyncId = code;
-          saveAppState(false);
-          renderAll();
-          statusEl.textContent = 'Historique & Comptes récupérés avec succès ✓';
-        }
-      } catch (err) {
-        statusEl.textContent = 'Impossible de récupérer ce code Cloud';
+      if (!silent && statusEl) {
+        statusEl.textContent = 'Aucune donnée trouvée (cliquez d\'abord sur Envoyer vers Firebase)';
       }
+      return false;
     }
+
+    // Synchronisation automatique en arrière-plan toutes les 5 secondes entre les téléphones et la tablette du salon
+    setInterval(() => {
+      pullFromFirebase(true);
+    }, 5000);
 
     function exportFullBackupFile() {
       const blob = new Blob([JSON.stringify(appState, null, 2)], { type: 'application/json' });
@@ -1289,9 +1343,9 @@
         try {
           const imported = JSON.parse(e.target.result);
           if (imported && Array.isArray(imported.members) && Array.isArray(imported.tasks)) {
-            appState = imported;
+            appState = ensureSalonGeneralAccount(imported);
             addHistoryEntry('a restauré une sauvegarde complète sur cet appareil');
-            saveAppState(false);
+            saveAppState(true);
             renderAll();
             document.getElementById('syncModal').close();
           }
@@ -1302,12 +1356,11 @@
       reader.readAsText(file);
     }
 
-    // --- MÉMO FOYER ---
     function editFamilyNote() {
-      const next = prompt('Modifier le mémo du foyer :', appState.familyNote);
+      const next = prompt('Modifier le mémo du salon :', appState.familyNote);
       if (next !== null && next.trim() !== '') {
         appState.familyNote = next.trim();
-        addHistoryEntry('a mis à jour le mémo du foyer');
+        addHistoryEntry('a mis à jour le mémo du salon');
         saveAppState();
         renderAccountsHeader();
       }
@@ -1332,6 +1385,7 @@
     }
 
     renderAll();
+    pullFromFirebase(true);
   </script>
 </body>
 </html>
