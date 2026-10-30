@@ -1,10 +1,10 @@
 {
-  "name": "HomeView Tablette Maison",
+  "name": "HomeView Tablette & Mobile",
   "short_name": "HomeView",
-  "description": "Dashboard familial style Apple Home : Planning des tâches par membre et lecteur YouTube Music",
+  "description": "Calendrier familial sécurisé & Tâches par compte (Adaptation auto Paysage & Portrait)",
   "start_url": "./index.html",
   "display": "fullscreen",
-  "orientation": "landscape",
+  "orientation": "any",
   "background_color": "#0B0F19",
   "theme_color": "#0B0F19",
   "icons": [

@@ -2,6 +2,7 @@ package com.maison.homeview;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -68,6 +69,21 @@ public class MainActivity extends Activity {
         });
 
         webView.loadUrl("file:///android_asset/index.html");
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        enableImmersiveFullscreen();
+        if (webView != null) {
+            final String mode = (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT)
+                    ? "portrait"
+                    : "landscape";
+            webView.post(() -> webView.evaluateJavascript(
+                    "if (window.detectAndApplyOrientation) { window.detectAndApplyOrientation('" + mode + "'); }",
+                    null
+            ));
+        }
     }
 
     private void enableImmersiveFullscreen() {
