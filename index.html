@@ -545,6 +545,7 @@
 
     const TODAY_KEY = formatDateKey(new Date());
     const DEFAULT_PIN_HASH = hashPinSync('1234');
+    const SACHA_PIN_HASH = hashPinSync('0000');
 
     const DEFAULT_STATE = {
       firebaseDbUrl: DEFAULT_FIREBASE_URLS[0],
@@ -554,20 +555,21 @@
       familyNote: 'Bienvenue sur la tablette du salon ! Connectez-vous avec votre code PIN pour accéder au calendrier.',
       members: [
         { id: 'salon', name: 'Tablette Salon', emoji: '🏡', pinHash: DEFAULT_PIN_HASH, pinLength: 4, isGeneral: true, role: 'salon', color: COLOR_PALETTE[0].badge, dot: COLOR_PALETTE[0].dot },
-        { id: 'alex', name: 'Alex', emoji: '👨', pinHash: DEFAULT_PIN_HASH, pinLength: 4, isGeneral: false, role: 'admin', color: COLOR_PALETTE[1].badge, dot: COLOR_PALETTE[1].dot },
-        { id: 'sarah', name: 'Sarah', emoji: '👩', pinHash: DEFAULT_PIN_HASH, pinLength: 4, isGeneral: false, role: 'admin', color: COLOR_PALETTE[2].badge, dot: COLOR_PALETTE[2].dot },
-        { id: 'leo', name: 'Léo', emoji: '👦', pinHash: DEFAULT_PIN_HASH, pinLength: 4, isGeneral: false, role: 'member', color: COLOR_PALETTE[3].badge, dot: COLOR_PALETTE[3].dot },
-        { id: 'emma', name: 'Emma', emoji: '👧', pinHash: DEFAULT_PIN_HASH, pinLength: 4, isGeneral: false, role: 'member', color: COLOR_PALETTE[4].badge, dot: COLOR_PALETTE[4].dot }
+        { id: 'sacha', name: 'Sacha', emoji: '👑', pinHash: SACHA_PIN_HASH, pinLength: 4, isGeneral: false, role: 'admin', color: COLOR_PALETTE[1].badge, dot: COLOR_PALETTE[1].dot },
+        { id: 'alex', name: 'Alex', emoji: '👨', pinHash: DEFAULT_PIN_HASH, pinLength: 4, isGeneral: false, role: 'admin', color: COLOR_PALETTE[2].badge, dot: COLOR_PALETTE[2].dot },
+        { id: 'sarah', name: 'Sarah', emoji: '👩', pinHash: DEFAULT_PIN_HASH, pinLength: 4, isGeneral: false, role: 'admin', color: COLOR_PALETTE[3].badge, dot: COLOR_PALETTE[3].dot },
+        { id: 'leo', name: 'Léo', emoji: '👦', pinHash: DEFAULT_PIN_HASH, pinLength: 4, isGeneral: false, role: 'member', color: COLOR_PALETTE[4].badge, dot: COLOR_PALETTE[4].dot },
+        { id: 'emma', name: 'Emma', emoji: '👧', pinHash: DEFAULT_PIN_HASH, pinLength: 4, isGeneral: false, role: 'member', color: COLOR_PALETTE[0].badge, dot: COLOR_PALETTE[0].dot }
       ],
       tasks: [
+        { id: 100, title: 'Configurer le calendrier de la maison', date: TODAY_KEY, time: '09:00', category: '🏠 Maison', memberId: 'sacha', createdBy: 'sacha', done: false, completedAt: null },
         { id: 101, title: 'Vider le lave-vaisselle du matin', date: TODAY_KEY, time: '08:15', category: '🏠 Maison', memberId: 'alex', createdBy: 'alex', done: true, completedAt: '08:20' },
         { id: 102, title: 'Devoirs de mathématiques & lecture', date: TODAY_KEY, time: '17:30', category: '🎒 École', memberId: 'leo', createdBy: 'sarah', done: false, completedAt: null },
         { id: 103, title: 'Préparer le dîner en famille', date: TODAY_KEY, time: '19:00', category: '🍽️ Repas', memberId: 'sarah', createdBy: 'sarah', done: false, completedAt: null },
-        { id: 104, title: 'Mettre la table du salon', date: TODAY_KEY, time: '19:30', category: '🍽️ Repas', memberId: 'emma', createdBy: 'salon', done: false, completedAt: null },
-        { id: 105, title: 'Sortir le bac de recyclage', date: TODAY_KEY, time: '20:30', category: '🏠 Maison', memberId: 'alex', createdBy: 'alex', done: false, completedAt: null }
+        { id: 104, title: 'Mettre la table du salon', date: TODAY_KEY, time: '19:30', category: '🍽️ Repas', memberId: 'emma', createdBy: 'salon', done: false, completedAt: null }
       ],
       history: [
-        { id: 1, timestamp: new Date().toISOString(), actorId: 'salon', action: 'Système de sécurité PIN & Hachage SHA-256 initialisé', dateKey: TODAY_KEY }
+        { id: 1, timestamp: new Date().toISOString(), actorId: 'sacha', action: 'Compte Administrateur Sacha (PIN 0000) activé', dateKey: TODAY_KEY }
       ]
     };
 
@@ -588,6 +590,19 @@
           dot: COLOR_PALETTE[0].dot
         });
       }
+      if (!state.members.some(m => m.id === 'sacha' || m.name.toLowerCase() === 'sacha')) {
+        state.members.splice(1, 0, {
+          id: 'sacha',
+          name: 'Sacha',
+          emoji: '👑',
+          pinHash: SACHA_PIN_HASH,
+          pinLength: 4,
+          isGeneral: false,
+          role: 'admin',
+          color: COLOR_PALETTE[1].badge,
+          dot: COLOR_PALETTE[1].dot
+        });
+      }
       // Migration des anciens codes PIN en clair vers pinHash sécurisé
       state.members.forEach((m, idx) => {
         if (m.pin && !m.pinHash) {
@@ -596,10 +611,12 @@
           delete m.pin;
         }
         if (!m.pinHash) {
-          m.pinHash = DEFAULT_PIN_HASH;
+          m.pinHash = m.id === 'sacha' ? SACHA_PIN_HASH : DEFAULT_PIN_HASH;
           m.pinLength = 4;
         }
-        if (!m.role) {
+        if (m.id === 'sacha') {
+          m.role = 'admin';
+        } else if (!m.role) {
           m.role = m.isGeneral ? 'salon' : (idx <= 2 ? 'admin' : 'member');
         }
       });
