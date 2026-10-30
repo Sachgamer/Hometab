@@ -121,9 +121,8 @@
         <button type="button" onclick="backspaceAuthPinDigit()" class="h-14 rounded-2xl bg-slate-900 hover:bg-slate-800 text-sm font-bold text-slate-300 border border-white/5 transition">⌫</button>
       </div>
 
-      <div class="pt-2 border-t border-white/10 flex items-center justify-between text-xs text-slate-400">
-        <span>🔒 Hachage SHA-256 & Anti-Bruteforce</span>
-        <button type="button" onclick="openSyncModal()" class="text-blue-400 hover:underline font-semibold">Récupérer un foyer</button>
+      <div class="pt-2 border-t border-white/10 flex items-center justify-center text-xs text-slate-400">
+        <span>🔒 Réglages & Firebase verrouillés (Accès exclusif Admin Sacha)</span>
       </div>
     </div>
   </div>
@@ -159,14 +158,14 @@
     <!-- Barre des Comptes (Tout changement de compte exige le code PIN) -->
     <div class="flex items-center gap-2 overflow-x-auto py-1" id="accountsHeaderBar"></div>
 
-    <!-- Actions Globales -->
+    <!-- Actions Globales (Réglages & Firebase visibles UNIQUEMENT pour Sacha Admin) -->
     <div class="flex items-center gap-2">
-      <button onclick="openSyncModal()" title="Sécurité Firebase & Synchronisation" class="apple-glass px-3.5 py-2.5 rounded-2xl text-xs font-bold text-amber-300 hover:text-white hover:bg-amber-500/20 border border-amber-500/25 transition flex items-center gap-1.5">
+      <button id="btnAdminSync" onclick="openSyncModal()" title="Réglages Firebase & Sécurité (Réservé à Sacha)" class="hidden apple-glass px-3.5 py-2.5 rounded-2xl text-xs font-bold text-amber-300 hover:text-white hover:bg-amber-500/20 border border-amber-500/25 transition flex items-center gap-1.5">
         <span>🛡️</span>
-        <span class="hidden sm:inline">Sécurité & Sync</span>
+        <span class="hidden sm:inline">Firebase & Réglages</span>
       </button>
 
-      <button onclick="openMemberModal()" title="Gérer les comptes, emojis et codes PIN" class="apple-glass px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-200 hover:text-white hover:bg-white/10 transition flex items-center gap-1.5">
+      <button id="btnAdminAccounts" onclick="openMemberModal()" title="Gérer les comptes, emojis et codes PIN (Réservé à Sacha)" class="hidden apple-glass px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-200 hover:text-white hover:bg-white/10 transition flex items-center gap-1.5">
         <span>🔐</span>
         <span class="hidden sm:inline">Comptes & PIN</span>
       </button>
@@ -231,11 +230,11 @@
           </button>
         </div>
 
-        <!-- Mémo Foyer Persistant -->
-        <div onclick="editFamilyNote()" class="apple-glass rounded-3xl p-4 flex flex-col justify-between cursor-pointer hover:border-white/20 transition">
+        <!-- Mémo Foyer Persistant (Modification réservée à Sacha Admin) -->
+        <div id="familyNoteCard" onclick="editFamilyNote()" class="apple-glass rounded-3xl p-4 flex flex-col justify-between transition">
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-amber-300 bg-amber-500/15 border border-amber-500/25 px-2.5 py-1 rounded-full">📌 Mémo Salon</span>
-            <span class="text-xs font-semibold text-blue-400">Modifier</span>
+            <span id="familyNoteEditBadge" class="hidden text-xs font-semibold text-blue-400 cursor-pointer">Modifier</span>
           </div>
           <p id="familyNoteText" class="text-xs font-semibold text-slate-200 line-clamp-4 my-2">
             Bienvenue sur la tablette du salon ! Connectez-vous avec votre code PIN pour gérer vos tâches.
@@ -556,8 +555,8 @@
       members: [
         { id: 'salon', name: 'Tablette Salon', emoji: '🏡', pinHash: DEFAULT_PIN_HASH, pinLength: 4, isGeneral: true, role: 'salon', color: COLOR_PALETTE[0].badge, dot: COLOR_PALETTE[0].dot },
         { id: 'sacha', name: 'Sacha', emoji: '👑', pinHash: SACHA_PIN_HASH, pinLength: 4, isGeneral: false, role: 'admin', color: COLOR_PALETTE[1].badge, dot: COLOR_PALETTE[1].dot },
-        { id: 'alex', name: 'Alex', emoji: '👨', pinHash: DEFAULT_PIN_HASH, pinLength: 4, isGeneral: false, role: 'admin', color: COLOR_PALETTE[2].badge, dot: COLOR_PALETTE[2].dot },
-        { id: 'sarah', name: 'Sarah', emoji: '👩', pinHash: DEFAULT_PIN_HASH, pinLength: 4, isGeneral: false, role: 'admin', color: COLOR_PALETTE[3].badge, dot: COLOR_PALETTE[3].dot },
+        { id: 'alex', name: 'Alex', emoji: '👨', pinHash: DEFAULT_PIN_HASH, pinLength: 4, isGeneral: false, role: 'member', color: COLOR_PALETTE[2].badge, dot: COLOR_PALETTE[2].dot },
+        { id: 'sarah', name: 'Sarah', emoji: '👩', pinHash: DEFAULT_PIN_HASH, pinLength: 4, isGeneral: false, role: 'member', color: COLOR_PALETTE[3].badge, dot: COLOR_PALETTE[3].dot },
         { id: 'leo', name: 'Léo', emoji: '👦', pinHash: DEFAULT_PIN_HASH, pinLength: 4, isGeneral: false, role: 'member', color: COLOR_PALETTE[4].badge, dot: COLOR_PALETTE[4].dot },
         { id: 'emma', name: 'Emma', emoji: '👧', pinHash: DEFAULT_PIN_HASH, pinLength: 4, isGeneral: false, role: 'member', color: COLOR_PALETTE[0].badge, dot: COLOR_PALETTE[0].dot }
       ],
@@ -569,7 +568,7 @@
         { id: 104, title: 'Mettre la table du salon', date: TODAY_KEY, time: '19:30', category: '🍽️ Repas', memberId: 'emma', createdBy: 'salon', done: false, completedAt: null }
       ],
       history: [
-        { id: 1, timestamp: new Date().toISOString(), actorId: 'sacha', action: 'Compte Administrateur Sacha (PIN 0000) activé', dateKey: TODAY_KEY }
+        { id: 1, timestamp: new Date().toISOString(), actorId: 'sacha', action: 'Compte Administrateur exclusif Sacha (PIN 0000) activé', dateKey: TODAY_KEY }
       ]
     };
 
@@ -603,8 +602,8 @@
           dot: COLOR_PALETTE[1].dot
         });
       }
-      // Migration des anciens codes PIN en clair vers pinHash sécurisé
-      state.members.forEach((m, idx) => {
+      // Migration des anciens codes PIN et restriction STRICTE du rôle Admin à Sacha uniquement
+      state.members.forEach((m) => {
         if (m.pin && !m.pinHash) {
           m.pinHash = hashPinSync(m.pin);
           m.pinLength = String(m.pin).length;
@@ -614,10 +613,13 @@
           m.pinHash = m.id === 'sacha' ? SACHA_PIN_HASH : DEFAULT_PIN_HASH;
           m.pinLength = 4;
         }
-        if (m.id === 'sacha') {
+        if (m.id === 'sacha' || m.name.toLowerCase() === 'sacha') {
+          m.id = 'sacha';
           m.role = 'admin';
-        } else if (!m.role) {
-          m.role = m.isGeneral ? 'salon' : (idx <= 2 ? 'admin' : 'member');
+        } else if (m.isGeneral || m.id === 'salon') {
+          m.role = 'salon';
+        } else {
+          m.role = 'member';
         }
       });
       if (!state.householdSecretHash) {
@@ -674,6 +676,13 @@
       return appState.members.find(m => m.id === authenticatedAccountId) || appState.members[0];
     }
 
+    // Seul Sacha authentifié possède les droits Admin (Firebase + Réglages de l'application)
+    function isSachaAdmin() {
+      if (!isAuthenticated || !authenticatedAccountId) return false;
+      const active = getActiveAccount();
+      return Boolean(active && active.id === 'sacha' && active.role === 'admin');
+    }
+
     // --- GESTION DE L'ÉCRAN DE VERROUILLAGE OBLIGATOIRE & ANTI-BRUTEFORCE ---
     function renderAuthLockScreen() {
       const lockEl = document.getElementById('authLockScreen');
@@ -686,7 +695,7 @@
       const grid = document.getElementById('lockScreenAccountsGrid');
       grid.innerHTML = appState.members.map(m => {
         const isSel = m.id === lockScreenSelectedAccountId;
-        const roleTag = m.role === 'admin' ? 'Admin' : (m.isGeneral ? 'Général' : 'Membre');
+        const roleTag = m.id === 'sacha' ? 'Admin' : (m.isGeneral ? 'Général' : 'Membre');
         return `
           <button type="button" onclick="selectLockScreenAccount('${escapeHtml(m.id)}')" class="p-2.5 rounded-2xl border text-left transition flex items-center gap-2 ${
             isSel
@@ -709,7 +718,7 @@
         document.getElementById('lockTargetRoleBadge').textContent =
           target.isGeneral
             ? 'Compte Général Salon • Code PIN requis'
-            : `Compte ${target.role === 'admin' ? 'Administrateur' : 'Personnel'} • Code PIN requis`;
+            : `Compte ${target.id === 'sacha' ? 'Administrateur' : 'Personnel'} • Code PIN requis`;
 
         const pinLen = Math.max(4, target.pinLength || 4);
         let dotsHtml = '';
@@ -817,6 +826,10 @@
       authenticatedAccountId = null;
       enteredAuthPin = '';
       document.getElementById('lockErrorMsg').textContent = '';
+      // Fermer immédiatement toutes les fenêtres de réglages si elles étaient ouvertes
+      document.getElementById('syncModal')?.close();
+      document.getElementById('memberModal')?.close();
+      renderAccountsHeader();
       renderAuthLockScreen();
     }
 
@@ -836,6 +849,7 @@
     }, 10000);
 
     function updateAutoLockSetting(mins) {
+      if (!isSachaAdmin()) return;
       appState.autoLockMinutes = Number(mins) || 15;
       saveAppState();
     }
@@ -892,8 +906,23 @@
     function renderAccountsHeader() {
       const bar = document.getElementById('accountsHeaderBar');
       const active = getActiveAccount();
+      const sachaAdmin = isSachaAdmin();
 
-      document.getElementById('activeUserLabel').textContent = `${active.emoji} ${active.name}`;
+      // Masquer totalement les boutons Firebase et Réglages de l'application pour tous les autres comptes
+      const btnSync = document.getElementById('btnAdminSync');
+      const btnAccounts = document.getElementById('btnAdminAccounts');
+      const noteEditBadge = document.getElementById('familyNoteEditBadge');
+      const noteCard = document.getElementById('familyNoteCard');
+
+      if (btnSync) btnSync.classList.toggle('hidden', !sachaAdmin);
+      if (btnAccounts) btnAccounts.classList.toggle('hidden', !sachaAdmin);
+      if (noteEditBadge) noteEditBadge.classList.toggle('hidden', !sachaAdmin);
+      if (noteCard) {
+        noteCard.classList.toggle('cursor-pointer', sachaAdmin);
+        noteCard.classList.toggle('hover:border-white/20', sachaAdmin);
+      }
+
+      document.getElementById('activeUserLabel').textContent = isAuthenticated ? `${active.emoji} ${active.name}` : 'Verrouillé';
       document.getElementById('headerModeIcon').textContent = active.emoji;
 
       bar.innerHTML = appState.members.map(m => {
@@ -918,7 +947,7 @@
 
       if (active.isGeneral || active.id === 'salon') {
         badgeType.textContent = '🏡 Vue Générale Salon';
-        subtitleInfo.textContent = 'Connecté sur « Tablette Salon » : vue globale de tous les membres du foyer';
+        subtitleInfo.textContent = 'Connecté sur « Tablette Salon » : vue globale du calendrier (Réglages verrouillés)';
         const totalPending = appState.tasks.filter(t => !t.done).length;
         cardBody.innerHTML = `
           <div class="flex items-center gap-3">
@@ -932,8 +961,10 @@
           </div>
         `;
       } else {
-        badgeType.textContent = active.role === 'admin' ? '🛡️ Compte Admin' : '👤 Compte Personnel';
-        subtitleInfo.textContent = `Session authentifiée de ${active.emoji} ${active.name}`;
+        badgeType.textContent = sachaAdmin ? '👑 Super Admin' : '👤 Compte Personnel';
+        subtitleInfo.textContent = sachaAdmin
+          ? `Session Administrateur de ${active.emoji} ${active.name} (Accès complet Firebase & Réglages)`
+          : `Session personnelle de ${active.emoji} ${active.name} (Réglages & Firebase verrouillés)`;
         const myRemaining = appState.tasks.filter(t => t.memberId === active.id && !t.done).length;
         cardBody.innerHTML = `
           <div class="flex items-center gap-3">
@@ -1210,9 +1241,9 @@
       const t = appState.tasks.find(item => item.id === taskId);
       if (!t) return;
       const active = getActiveAccount();
-      // Seul le propriétaire de la tâche, le créateur ou un Admin peut supprimer une tâche
-      if (active.role !== 'admin' && t.memberId !== active.id && t.createdBy !== active.id) {
-        alert('Sécurité : Seul le membre concerné ou un Administrateur peut supprimer cette tâche.');
+      // Seul le propriétaire de la tâche, le créateur ou Sacha (Admin) peut supprimer une tâche
+      if (!isSachaAdmin() && t.memberId !== active.id && t.createdBy !== active.id) {
+        alert('Sécurité : Seul le membre concerné ou Sacha (Admin) peut supprimer cette tâche.');
         return;
       }
       appState.tasks = appState.tasks.filter(item => item.id !== taskId);
@@ -1289,9 +1320,12 @@
       document.getElementById('taskModal').close();
     });
 
-    // --- MODALE GESTION DES COMPTES & CODES PIN SÉCURISÉS ---
+    // --- MODALE GESTION DES COMPTES & CODES PIN SÉCURISÉS (EXCLUSIF SACHA ADMIN) ---
     function openMemberModal(focusMemberId = null) {
-      if (!isAuthenticated) return;
+      if (!isSachaAdmin()) {
+        alert('Accès refusé : Seul le compte Administrateur (Sacha) peut accéder aux réglages des comptes.');
+        return;
+      }
       renderMembersManageList();
       document.getElementById('memberModal').showModal();
       if (focusMemberId) {
@@ -1302,13 +1336,11 @@
     }
 
     function renderMembersManageList() {
+      if (!isSachaAdmin()) return;
       const list = document.getElementById('membersManageList');
-      const active = getActiveAccount();
-      const isAdmin = active.role === 'admin';
 
       list.innerHTML = appState.members.map(m => {
         const isSalon = m.id === 'salon' || m.isGeneral;
-        const canEdit = isAdmin || m.id === active.id;
         return `
           <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-800/80 border border-white/10">
             <div class="flex items-center gap-3">
@@ -1318,20 +1350,18 @@
               <div>
                 <div class="text-sm font-bold text-white flex items-center gap-2">
                   <span>${escapeHtml(m.name)}</span>
-                  <span class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/5 text-slate-400">${m.role === 'admin' ? '🛡️ Admin' : (isSalon ? '🏡 Général' : '👤 Membre')}</span>
+                  <span class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/5 text-slate-400">${m.id === 'sacha' ? '👑 Super Admin' : (isSalon ? '🏡 Général' : '👤 Membre')}</span>
                 </div>
-                ${canEdit ? `
-                  <button type="button" onclick="openEmojiPickerForMember('${escapeHtml(m.id)}')" class="text-xs text-blue-400 hover:underline">
-                    Modifier Emoji / Code PIN
-                  </button>
-                ` : `<span class="text-xs text-slate-500">Protégé par PIN personnel</span>`}
+                <button type="button" onclick="openEmojiPickerForMember('${escapeHtml(m.id)}')" class="text-xs text-blue-400 hover:underline">
+                  Modifier Emoji / Code PIN
+                </button>
               </div>
             </div>
             <div class="flex items-center gap-2">
               <button type="button" onclick="document.getElementById('memberModal').close();lockSessionNow('${escapeHtml(m.id)}');" class="text-xs font-bold px-2.5 py-1.5 rounded-xl bg-blue-600/20 text-blue-300 hover:bg-blue-600/30">
                 Connecter
               </button>
-              ${isAdmin && !isSalon && appState.members.length > 2 ? `
+              ${!isSalon && m.id !== 'sacha' && appState.members.length > 2 ? `
                 <button type="button" onclick="removeMember('${escapeHtml(m.id)}')" class="text-xs font-semibold text-rose-400 hover:text-rose-300 px-2 py-1">
                   Retirer
                 </button>
@@ -1343,9 +1373,8 @@
     }
 
     function openEmojiPickerForMember(memberId) {
-      const active = getActiveAccount();
-      if (active.role !== 'admin' && active.id !== memberId) {
-        alert('Sécurité : Vous ne pouvez modifier que votre propre compte (ou être Administrateur).');
+      if (!isSachaAdmin()) {
+        alert('Accès refusé : Seul le compte Administrateur (Sacha) peut modifier les comptes.');
         return;
       }
       editingMemberId = memberId;
@@ -1374,14 +1403,12 @@
     }
 
     function saveAccountCustomizations() {
-      if (!editingMemberId) return;
-      const active = getActiveAccount();
+      if (!isSachaAdmin() || !editingMemberId) return;
       const member = appState.members.find(m => m.id === editingMemberId);
       if (!member) return;
 
       const feedback = document.getElementById('accountEditFeedback');
       const newEmoji = document.getElementById('customEmojiInput').value.trim();
-      const oldPin = document.getElementById('currentPinVerifyInput').value.trim();
       const newPin = document.getElementById('customPinInput').value.trim().replace(/\D/g, '');
 
       if (newEmoji) {
@@ -1391,11 +1418,6 @@
       if (newPin.length > 0) {
         if (newPin.length < 4) {
           feedback.textContent = 'Le nouveau code PIN doit contenir au moins 4 chiffres.';
-          return;
-        }
-        // Si ce n'est pas un Admin qui réinitialise, vérifier l'ancien PIN
-        if (active.role !== 'admin' && hashPinSync(oldPin) !== member.pinHash) {
-          feedback.textContent = 'Ancien code PIN incorrect.';
           return;
         }
         member.pinHash = hashPinSync(newPin);
@@ -1411,12 +1433,11 @@
     }
 
     function removeMember(id) {
-      const active = getActiveAccount();
-      if (active.role !== 'admin') {
-        alert('Sécurité : Seul un compte Administrateur peut supprimer un compte.');
+      if (!isSachaAdmin()) {
+        alert('Accès refusé : Seul Sacha (Admin) peut supprimer un compte.');
         return;
       }
-      if (id === 'salon') return;
+      if (id === 'salon' || id === 'sacha') return;
       const target = appState.members.find(m => m.id === id);
       appState.members = appState.members.filter(m => m.id !== id);
       if (selectedMemberFilter === id) selectedMemberFilter = 'all';
@@ -1429,9 +1450,8 @@
 
     document.getElementById('addMemberForm').addEventListener('submit', (e) => {
       e.preventDefault();
-      const active = getActiveAccount();
-      if (active.role !== 'admin') {
-        alert('Sécurité : Connectez-vous avec un compte Administrateur pour créer un nouveau compte.');
+      if (!isSachaAdmin()) {
+        alert('Accès refusé : Seul Sacha (Admin) peut créer un nouveau compte.');
         return;
       }
       const name = document.getElementById('newMemberName').value.trim();
@@ -1462,28 +1482,39 @@
       renderAll();
     });
 
-    // --- SYNCHRONISATION FIREBASE SÉCURISÉE PAR CLÉ SECRÈTE DU FOYER ---
+    // --- SYNCHRONISATION FIREBASE & RÉGLAGES (ACCÈS MANUEL EXCLUSIF À SACHA ADMIN) ---
     function openSyncModal() {
+      if (!isSachaAdmin()) {
+        alert('Accès refusé : Seul le compte Administrateur (Sacha) peut accéder à Firebase et aux réglages de l\'application.');
+        return;
+      }
       document.getElementById('firebaseUrlInput').value = appState.firebaseDbUrl || DEFAULT_FIREBASE_URLS[0];
       document.getElementById('autoLockMinutesSelect').value = String(appState.autoLockMinutes || 15);
       document.getElementById('syncModal').showModal();
     }
 
     function getCleanFirebaseUrl() {
-      const inputEl = document.getElementById('firebaseUrlInput');
-      const raw = (inputEl && inputEl.value.trim()) ? inputEl.value.trim() : (appState.firebaseDbUrl || DEFAULT_FIREBASE_URLS[0]);
-      return raw.replace(/\/+$/, '');
+      if (isSachaAdmin()) {
+        const inputEl = document.getElementById('firebaseUrlInput');
+        if (inputEl && inputEl.value.trim()) {
+          return inputEl.value.trim().replace(/\/+$/, '');
+        }
+      }
+      return (appState.firebaseDbUrl || DEFAULT_FIREBASE_URLS[0]).replace(/\/+$/, '');
     }
 
     function getHouseholdChannelHash() {
-      const secretInput = document.getElementById('householdSecretInput')?.value.trim();
-      if (secretInput) {
-        appState.householdSecretHash = hashPinSync(secretInput);
+      if (isSachaAdmin()) {
+        const secretInput = document.getElementById('householdSecretInput')?.value.trim();
+        if (secretInput) {
+          appState.householdSecretHash = hashPinSync(secretInput);
+        }
       }
       return appState.householdSecretHash || hashPinSync('FOYER-MAISON');
     }
 
     async function pushToFirebase(silent = true) {
+      if (!silent && !isSachaAdmin()) return false;
       const statusEl = document.getElementById('cloudSyncStatusText');
       const baseUrl = getCleanFirebaseUrl();
       const channel = getHouseholdChannelHash();
@@ -1511,6 +1542,7 @@
     }
 
     async function pullFromFirebase(silent = true) {
+      if (!silent && !isSachaAdmin()) return false;
       const statusEl = document.getElementById('cloudSyncStatusText');
       const baseUrl = getCleanFirebaseUrl();
       const channel = getHouseholdChannelHash();
@@ -1545,6 +1577,7 @@
     }, 5000);
 
     function exportFullBackupFile() {
+      if (!isSachaAdmin()) return;
       const blob = new Blob([JSON.stringify(appState, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -1555,6 +1588,7 @@
     }
 
     function importFullBackupFile(event) {
+      if (!isSachaAdmin()) return;
       const file = event.target.files?.[0];
       if (!file) return;
       const reader = new FileReader();
@@ -1577,8 +1611,8 @@
     }
 
     function editFamilyNote() {
-      if (!isAuthenticated) return;
-      const next = prompt('Modifier le mémo du salon :', appState.familyNote);
+      if (!isSachaAdmin()) return;
+      const next = prompt('Modifier le mémo du salon (Admin Sacha) :', appState.familyNote);
       if (next !== null && next.trim() !== '') {
         appState.familyNote = next.trim();
         addHistoryEntry('a mis à jour le mémo du salon');
