@@ -2,10 +2,7 @@ package com.maison.homeview;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
-import android.content.Intent;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -15,13 +12,19 @@ import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
-import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
+
 public class MainActivity extends Activity {
 
+    private static final String DB_FILENAME = "homeview_database.json";
     private WebView webView;
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -45,49 +48,17 @@ public class MainActivity extends Activity {
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
-        settings.setMediaPlaybackRequiresUserGesture(false);
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
 
-        // Pont natif Android pour lancer YouTube Music ou toute autre app installée sur la tablette
+        // Pont natif Android pour persistance sur disque interne de la tablette
         webView.addJavascriptInterface(new AndroidBridge(), "AndroidHomeView");
 
         webView.setWebChromeClient(new WebChromeClient());
-        webView.setWebViewClient(new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                Uri uri = request.getUrl();
-                String host = uri.getHost() != null ? uri.getHost() : "";
-
-                // Si l'utilisateur clique pour ouvrir YouTube Music en externe, ouvre l'app native YouTube Music
-                if (host.contains("music.youtube.com")) {
-                    openYouTubeMusicNative(uri.toString());
-                    return true;
-                }
-                return false;
-            }
-        });
+        webView.setWebViewClient(new WebViewClient());
 
         webView.loadUrl("file:///android_asset/index.html");
-    }
-
-    private void openYouTubeMusicNative(String fallbackUrl) {
-        try {
-            Intent intent = getPackageManager().getLaunchIntentForPackage("com.google.android.apps.youtube.music");
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-                return;
-            }
-        } catch (Exception ignored) {
-        }
-
-        try {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(fallbackUrl));
-            startActivity(browserIntent);
-        } catch (ActivityNotFoundException ignored) {
-        }
     }
 
     private void enableImmersiveFullscreen() {
@@ -125,13 +96,42 @@ public class MainActivity extends Activity {
         if (webView != null && webView.canGoBack()) {
             webView.goBack();
         }
-        // En mode HomeView Kiosk sur tablette, on évite de fermer l'application par erreur avec le bouton retour
     }
 
     public class AndroidBridge {
         @JavascriptInterface
-        public void launchYouTubeMusic() {
-            runOnUiThread(() -> openYouTubeMusicNative("https://music.youtube.com"));
+        public boolean saveDatabase(String jsonPayload) {
+            try {
+                File file = new File(getFilesDir(), DB_FILENAME);
+                try (FileOutputStream fos = new FileOutputStream(file, false)) {
+                    fos.write(jsonPayload.getBytes(StandardCharsets.UTF_8));
+                    fos.flush();
+                }
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
+        @JavascriptInterface
+        public String loadDatabase() {
+            try {
+                File file = new File(getFilesDir(), DB_FILENAME);
+                if (!file.exists()) {
+                    return "";
+                }
+                try (FileInputStream fis = new FileInputStream(file);
+                     ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                    byte[] buffer = new byte[4096];
+                    int read;
+                    while ((read = fis.read(buffer)) != -1) {
+                        bos.write(buffer, 0, read);
+                    }
+                    return bos.toString("UTF-8");
+                }
+            } catch (Exception e) {
+                return "";
+            }
         }
     }
 }

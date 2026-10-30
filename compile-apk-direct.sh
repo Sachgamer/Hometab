@@ -61,8 +61,8 @@ mkdir -p "$WORK_DIR/compiled_res" "$WORK_DIR/gen" "$WORK_DIR/classes" "$WORK_DIR
   --java "$WORK_DIR/gen" \
   --min-sdk-version 24 \
   --target-sdk-version 34 \
-  --version-code 1 \
-  --version-name "1.0.0" \
+  --version-code 2 \
+  --version-name "2.0.0" \
   -o "$WORK_DIR/unaligned.apk" \
   "$WORK_DIR/compiled_res/res.zip"
 
