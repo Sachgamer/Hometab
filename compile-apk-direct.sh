@@ -59,23 +59,23 @@ mkdir -p "$WORK_DIR/compiled_res" "$WORK_DIR/gen" "$WORK_DIR/classes" "$WORK_DIR
   --manifest app/src/main/AndroidManifest.xml \
   -A app/src/main/assets \
   --java "$WORK_DIR/gen" \
-  --min-sdk-version 24 \
-  --target-sdk-version 34 \
-  --version-code 7 \
-  --version-name "2.5.0" \
+  --min-sdk-version 21 \
+  --target-sdk-version 33 \
+  --version-code 8 \
+  --version-name "2.6.0" \
   -o "$WORK_DIR/unaligned.apk" \
   "$WORK_DIR/compiled_res/res.zip"
 
-# 4c. Compiler le code Java (MainActivity.java + R.java)
-javac -source 17 -target 17 \
+# 4c. Compiler le code Java (MainActivity.java + R.java) en bytecode Java 8 universel
+javac -source 1.8 -target 1.8 \
   -classpath "$ANDROID_JAR" \
   -d "$WORK_DIR/classes" \
   "$WORK_DIR/gen/com/maison/homeview/R.java" \
   app/src/main/java/com/maison/homeview/MainActivity.java
 
-# 4d. Convertir les classes Java en Dalvik bytecode (classes.dex) avec d8
+# 4d. Convertir les classes Java en Dalvik bytecode (classes.dex) avec d8 (min-api 21)
 CLASS_FILES=$(find "$WORK_DIR/classes" -name "*.class")
-"$BUILD_TOOLS/d8" --lib "$ANDROID_JAR" --min-api 24 --output "$WORK_DIR/dex" $CLASS_FILES
+"$BUILD_TOOLS/d8" --lib "$ANDROID_JAR" --min-api 21 --output "$WORK_DIR/dex" $CLASS_FILES
 
 # 4e. Ajouter classes.dex dans l'APK
 python3 - << 'EOF'
@@ -89,7 +89,7 @@ EOF
 # 4f. Aligner l'APK avec zipalign
 "$BUILD_TOOLS/zipalign" -f -p 4 "$WORK_DIR/unaligned.apk" "$WORK_DIR/aligned.apk"
 
-# 4g. Générer une clé de signature et signer l'APK (v1 + v2 + v3)
+# 4g. Générer une clé de signature et signer l'APK avec TRIPLE SIGNATURE (v1 JAR + v2 + v3)
 KEYSTORE="$TOOLCHAIN_DIR/release-key.jks"
 if [ ! -f "$KEYSTORE" ]; then
   keytool -genkeypair \
@@ -104,6 +104,7 @@ if [ ! -f "$KEYSTORE" ]; then
 fi
 
 "$BUILD_TOOLS/apksigner" sign \
+  --min-sdk-version 21 \
   --v1-signing-enabled true \
   --v2-signing-enabled true \
   --v3-signing-enabled true \

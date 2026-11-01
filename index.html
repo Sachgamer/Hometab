@@ -1745,7 +1745,25 @@
       el.classList.toggle('flex', show);
     }
 
+    // Polyfill <dialog> pour compatibilité maximale avec tous les WebView Android (Honor MagicOS / Huawei EMUI)
     document.querySelectorAll('dialog').forEach(dlg => {
+      if (typeof dlg.showModal !== 'function') {
+        dlg.showModal = function() {
+          this.setAttribute('open', '');
+          this.style.display = 'block';
+          this.style.position = 'fixed';
+          this.style.top = '50%';
+          this.style.left = '50%';
+          this.style.transform = 'translate(-50%, -50%)';
+          this.style.zIndex = '9999';
+        };
+      }
+      if (typeof dlg.close !== 'function') {
+        dlg.close = function() {
+          this.removeAttribute('open');
+          this.style.display = 'none';
+        };
+      }
       dlg.addEventListener('click', (e) => {
         if (e.target === dlg) dlg.close();
       });
